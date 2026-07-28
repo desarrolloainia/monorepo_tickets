@@ -1,0 +1,51 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Backend API"
+readme = "README.md"
+requires-python = ">=3.14"
+
+dependencies = [
+    "alembic>=1.18.5",
+    "asyncpg>=0.31.0",
+    "fastapi>=0.139.2",
+    "pydantic-settings>=2.0",
+    "python-barcode>=0.16.1",
+    "python-escpos>=3.1",
+    "qrcode[pil]>=8.2",
+    "sqlalchemy[asyncio]>=2.0.51",
+    "uvicorn[standard]>=0.30",
+]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.39.9",
+    "httpx>=0.28",
+    "pre-commit>=4.6.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=6.0",
+    "ruff>=0.15.22",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "ASYNC",
+    "W",
+    "C4",
+    "RUF",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]

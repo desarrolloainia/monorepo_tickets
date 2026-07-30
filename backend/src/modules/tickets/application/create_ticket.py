@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from modules.tickets.api.dtos import TicketCreateDTO
 from modules.tickets.domain.entities.ticket import Ticket
@@ -10,7 +10,7 @@ class CreateTicket:
     def __init__(self, unit_of_work: uow.UnitOfWork) -> None:
         self.uow: uow.UnitOfWork = unit_of_work
 
-    async def create(self, datos_ticket: TicketCreateDTO) -> Ticket:
+    async def create(self, datos_ticket: TicketCreateDTO, created_by_id: UUID) -> Ticket:
         now = datetime.now(UTC)
         # ponytail: UUID is the ticket code until the sequence and QR adapters use the shared UoW.
         codigo = uuid4().hex
@@ -25,6 +25,7 @@ class CreateTicket:
             fecha_creacion=now,
             cantidad=datos_ticket.cantidad,
             aprobacion=False,
+            created_by_id=created_by_id,
         )
         ticket = await self.uow.tickets.add(ticket)
         await self.uow.commit()

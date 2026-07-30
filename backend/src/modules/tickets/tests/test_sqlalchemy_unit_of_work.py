@@ -26,6 +26,7 @@ async def test_shared_unit_of_work_confirma_la_sesion():
 
     async with UnitOfWork(as_async_session(session)) as unit_of_work:
         assert unit_of_work.tickets is not None
+        assert unit_of_work.users is not None
 
     assert session.committed and not session.rolled_back
 

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Uuid
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
@@ -20,6 +20,12 @@ class TicketModel(Base):
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     cantidad: Mapped[int] = mapped_column(Integer)
     aprobacion: Mapped[bool] = mapped_column(Boolean)
+    # ponytail: nullable until existing tickets can be backfilled with a creator.
+    created_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id"), index=True
+    )
+    approved_by_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class TicketCodeCounterModel(Base):

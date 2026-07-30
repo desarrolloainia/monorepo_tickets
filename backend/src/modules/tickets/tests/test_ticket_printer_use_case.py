@@ -26,7 +26,17 @@ class Printer:
 def ticket() -> Ticket:
     now = datetime.now().astimezone()
     return Ticket(
-        uuid4(), "Entrada", "Ana", "Concierto", "nuevo", "2607-000001", "", now, now, 1, False
+        id=uuid4(),
+        title="Entrada",
+        nombre="Ana",
+        description="Concierto",
+        status="nuevo",
+        codigo="2607-000001",
+        codigo_qr="",
+        fecha_emision=now,
+        fecha_creacion=now,
+        cantidad=1,
+        aprobacion=False,
     )
 
 

@@ -22,7 +22,19 @@ class Generator:
 
 def ticket() -> Ticket:
     now = datetime.now().astimezone()
-    return Ticket(uuid4(), "Entrada", "Ana", "Concierto", "nuevo", "ABC", "", now, now, 1, False)
+    return Ticket(
+        id=uuid4(),
+        title="Entrada",
+        nombre="Ana",
+        description="Concierto",
+        status="nuevo",
+        codigo="ABC",
+        codigo_qr="",
+        fecha_emision=now,
+        fecha_creacion=now,
+        cantidad=1,
+        aprobacion=False,
+    )
 
 
 async def test_generar_qr_asigna_el_codigo_generado():

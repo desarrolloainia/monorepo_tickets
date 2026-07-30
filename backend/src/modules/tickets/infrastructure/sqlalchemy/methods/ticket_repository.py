@@ -10,7 +10,7 @@ from modules.tickets.infrastructure.sqlalchemy.persistence.models import TicketM
 
 class SQLAlchemyTicketRepository:
     def __init__(self, session: AsyncSession):
-        self.session = session
+        self.session: AsyncSession = session
 
     @staticmethod
     def _to_entity(ticket_model: TicketModel) -> Ticket:
@@ -26,6 +26,9 @@ class SQLAlchemyTicketRepository:
             fecha_creacion=ticket_model.fecha_creacion,
             cantidad=ticket_model.cantidad,
             aprobacion=ticket_model.aprobacion,
+            created_by_id=ticket_model.created_by_id,
+            approved_by_id=ticket_model.approved_by_id,
+            approved_at=ticket_model.approved_at,
         )
 
     @staticmethod
@@ -41,6 +44,9 @@ class SQLAlchemyTicketRepository:
             fecha_creacion=ticket.fecha_creacion,
             cantidad=ticket.cantidad,
             aprobacion=ticket.aprobacion,
+            created_by_id=ticket.created_by_id,
+            approved_by_id=ticket.approved_by_id,
+            approved_at=ticket.approved_at,
         )
 
     async def add(self, ticket: Ticket) -> Ticket:
@@ -49,13 +55,24 @@ class SQLAlchemyTicketRepository:
         await self.session.flush()
         return self._to_entity(ticket_model)
 
-    async def remove(self, ticket_id: UUID) -> None:
-        await self.session.execute(delete(TicketModel).where(TicketModel.id == ticket_id))
+    async def remove(self, ticket_id: UUID, created_by_id: UUID | None = None) -> None:
+        query = delete(TicketModel).where(TicketModel.id == ticket_id)
+        if created_by_id is not None:
+            query = query.where(TicketModel.created_by_id == created_by_id)
+        _ = await self.session.execute(query)
 
-    async def find_by_id(self, ticket_id: UUID) -> Ticket | None:
-        ticket_model = await self.session.get(TicketModel, ticket_id)
+    async def find_by_id(
+        self, ticket_id: UUID, created_by_id: UUID | None = None
+    ) -> Ticket | None:
+        query = select(TicketModel).where(TicketModel.id == ticket_id)
+        if created_by_id is not None:
+            query = query.where(TicketModel.created_by_id == created_by_id)
+        ticket_model = await self.session.scalar(query)
         return None if ticket_model is None else self._to_entity(ticket_model)
 
-    async def list_all(self) -> Sequence[Ticket]:
-        result = await self.session.scalars(select(TicketModel))
+    async def list_all(self, created_by_id: UUID | None = None) -> Sequence[Ticket]:
+        query = select(TicketModel)
+        if created_by_id is not None:
+            query = query.where(TicketModel.created_by_id == created_by_id)
+        result = await self.session.scalars(query)
         return [self._to_entity(ticket_model) for ticket_model in result]

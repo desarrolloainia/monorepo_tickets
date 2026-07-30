@@ -40,14 +40,24 @@ class Tickets:
         self.current = value
         return value
 
-    async def remove(self, ticket_id: UUID) -> None:
+    async def remove(self, ticket_id: UUID, _created_by_id: UUID | None = None) -> None:
         self.deleted = ticket_id
 
-    async def find_by_id(self, ticket_id: UUID) -> Ticket | None:
-        return self.current if self.current and self.current.id == ticket_id else None
+    async def find_by_id(
+        self, ticket_id: UUID, created_by_id: UUID | None = None
+    ) -> Ticket | None:
+        if self.current is None or self.current.id != ticket_id:
+            return None
+        if created_by_id is not None and self.current.created_by_id != created_by_id:
+            return None
+        return self.current
 
-    async def list_all(self) -> list[Ticket]:
-        return [] if self.current is None else [self.current]
+    async def list_all(self, created_by_id: UUID | None = None) -> list[Ticket]:
+        if self.current is None:
+            return []
+        if created_by_id is not None and self.current.created_by_id != created_by_id:
+            return []
+        return [self.current]
 
 
 @final
@@ -75,29 +85,38 @@ def as_uow(value: TicketsUnitOfWork) -> UnitOfWork:
 
 async def test_ticket_use_cases_read_and_write_tickets():
     current = ticket()
+    owner_id = uuid4()
+    approver_id = uuid4()
+    current.created_by_id = owner_id
     uow = TicketsUnitOfWork(Tickets(current))
     printer = Printer()
 
-    assert await ListTickets(as_uow(uow)).list() == [current]
-    assert await GetTicketById(as_uow(uow)).get_by_id(current.id) is current
+    assert await ListTickets(as_uow(uow)).list(owner_id) == [current]
+    assert await GetTicketById(as_uow(uow)).get_by_id(current.id, owner_id) is current
+    assert await ListTickets(as_uow(uow)).list(uuid4()) == []
+    with pytest.raises(ValueError, match="Ticket no encontrado"):
+        _ = await GetTicketById(as_uow(uow)).get_by_id(current.id, uuid4())
 
-    await DeleteTicket(as_uow(uow)).delete(current.id)
-    approved = await ApproveTicket(as_uow(uow), printer).approve(current.id)
+    await DeleteTicket(as_uow(uow)).delete(current.id, owner_id)
+    approved = await ApproveTicket(as_uow(uow), printer).approve(current.id, approver_id)
 
     assert uow.tickets.deleted == current.id
     assert approved.aprobacion and uow.commits == 2
+    assert approved.approved_by_id == approver_id and approved.approved_at is not None
     assert printer.printed == [approved]
 
 
 async def test_create_ticket_assigns_server_values_and_commits():
     uow = TicketsUnitOfWork(Tickets(None))
+    owner_id = uuid4()
 
     created = await CreateTicket(as_uow(uow)).create(
-        TicketCreateDTO(title="Entrada", description="Concierto", cantidad=1)
+        TicketCreateDTO(title="Entrada", description="Concierto", cantidad=1), owner_id
     )
 
     assert created.nombre == created.title
     assert created.codigo == created.codigo_qr
+    assert created.created_by_id == owner_id
     assert not created.aprobacion and uow.commits == 1
 
 
@@ -107,9 +126,9 @@ async def test_get_and_approve_raise_for_unknown_ticket():
     printer = Printer()
 
     with pytest.raises(ValueError, match="Ticket no encontrado"):
-        _ = await GetTicketById(as_uow(uow)).get_by_id(ticket_id)
+        _ = await GetTicketById(as_uow(uow)).get_by_id(ticket_id, uuid4())
     with pytest.raises(ValueError, match="Ticket no encontrado"):
-        _ = await ApproveTicket(as_uow(uow), printer).approve(ticket_id)
+        _ = await ApproveTicket(as_uow(uow), printer).approve(ticket_id, uuid4())
 
     assert uow.commits == 0
     assert not printer.printed

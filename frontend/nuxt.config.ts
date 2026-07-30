@@ -4,8 +4,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui'],
   css: ['~/src/app/assets/main.css'],
-  dir: {
-      pages: './src/app/routes',
-      layouts: './src/app/layouts'
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://localhost:8000'
     }
+  },
+  dir: {
+    pages: './src/app/routes',
+    layouts: './src/app/layouts',
+    middleware: './src/app/middleware'
+  }
 })

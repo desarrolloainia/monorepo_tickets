@@ -16,3 +16,6 @@ class Ticket:
     cantidad: int
     aprobacion: bool
     id: UUID = field(default_factory=uuid4)
+    created_by_id: UUID | None = None
+    approved_by_id: UUID | None = None
+    approved_at: datetime | None = None

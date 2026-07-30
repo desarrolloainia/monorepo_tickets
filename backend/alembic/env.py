@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from modules.tickets.infrastructure.sqlalchemy.persistence.models import TicketModel
+from modules.users.infrastructure.sqlalchemy.persistence.models import UserModel
 from shared.database import database_url
 
 config = context.config
@@ -15,7 +16,8 @@ config.set_main_option("sqlalchemy.url", database_url)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = TicketModel.metadata
+models = (TicketModel, UserModel)
+target_metadata = models[0].metadata
 
 
 def run_migrations_offline() -> None:

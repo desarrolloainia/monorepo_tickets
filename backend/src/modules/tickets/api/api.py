@@ -13,6 +13,9 @@ from modules.tickets.application.delete_ticket import DeleteTicket
 from modules.tickets.application.get_ticket_by_id import GetTicketById
 from modules.tickets.application.list_tickets import ListTickets
 from modules.tickets.infrastructure.escpos.ticket_printer import EscposNetworkTicketPrinter
+from modules.auth.dependencies import current_user
+from modules.users.api.dependencies import require_approver
+from modules.users.domain.entities.users import User
 from shared.database import get_db
 from shared.uow import UnitOfWork
 
@@ -36,26 +39,31 @@ def get_ticket_printer() -> EscposNetworkTicketPrinter:
 
 
 @router.get("/", response_model=list[TicketDTO])
-async def list_tickets(uow: Annotated[UnitOfWork, Depends(get_uow)]):
-    return await ListTickets(uow).list()
+async def list_tickets(
+    uow: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
+):
+    return await ListTickets(uow).list(user.id)
 
 
 @router.post("/", response_model=TicketDTO, status_code=status.HTTP_201_CREATED)
 async def create_ticket(
     ticket: TicketCreateDTO,
     uow: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
 ):
-    return await CreateTicket(uow).create(ticket)
+    return await CreateTicket(uow).create(ticket, user.id)
 
 
 @router.patch("/{ticket_id}/approve", response_model=TicketDTO)
 async def approve_ticket(
     ticket_id: UUID,
     uow: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(require_approver)],
     printer: Annotated[EscposNetworkTicketPrinter, Depends(get_ticket_printer)],
 ):
     try:
-        return await ApproveTicket(uow, printer).approve(ticket_id)
+        return await ApproveTicket(uow, printer).approve(ticket_id, user.id)
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
 
@@ -64,9 +72,10 @@ async def approve_ticket(
 async def get_ticket(
     ticket_id: UUID,
     uow: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
 ):
     try:
-        return await GetTicketById(uow).get_by_id(ticket_id)
+        return await GetTicketById(uow).get_by_id(ticket_id, user.id)
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
 
@@ -75,5 +84,9 @@ async def get_ticket(
 async def delete_ticket(
     ticket_id: UUID,
     uow: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
 ) -> None:
-    await DeleteTicket(uow).delete(ticket_id)
+    try:
+        await DeleteTicket(uow).delete(ticket_id, user.id)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error

@@ -24,4 +24,7 @@ class TicketDTO(BaseModel):
     fecha_creacion: datetime
     cantidad: int
     aprobacion: bool
+    created_by_id: UUID | None
+    approved_by_id: UUID | None
+    approved_at: datetime | None
 

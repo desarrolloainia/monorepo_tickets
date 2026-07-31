@@ -1,92 +1,90 @@
-from collections.abc import AsyncIterator
-from os import getenv
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import HTMLResponse
 
-from modules.tickets.api.dtos import TicketCreateDTO, TicketDTO
-from modules.tickets.application.approve_ticket import ApproveTicket
-from modules.tickets.application.create_ticket import CreateTicket
-from modules.tickets.application.delete_ticket import DeleteTicket
-from modules.tickets.application.get_ticket_by_id import GetTicketById
-from modules.tickets.application.list_tickets import ListTickets
-from modules.tickets.infrastructure.escpos.ticket_printer import EscposNetworkTicketPrinter
-from modules.auth.dependencies import current_user
+from modules.auth.dependencies import current_user, get_uow
+from modules.tickets.api.dtos import TicketRequestCreateDTO, TicketRequestDTO
+from modules.tickets.application.approve_ticket_request import ApproveTicketRequest
+from modules.tickets.application.create_ticket_request import CreateTicketRequest
+from modules.tickets.application.get_ticket_request import GetTicketRequest
+from modules.tickets.application.print_ticket_request import PrintTicketRequest
+from modules.tickets.infrastructure.html_ticket_printer import HtmlTicketPrinter
 from modules.users.api.dependencies import require_approver
 from modules.users.domain.entities.users import User
-from shared.database import get_db
 from shared.uow import UnitOfWork
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
+#Estos endpoints para los empleados
+@router.post("/", response_model=TicketRequestDTO, status_code=status.HTTP_201_CREATED)
+async def create_ticket_request(
+    data: TicketRequestCreateDTO,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
+) -> TicketRequestDTO:
+    return TicketRequestDTO.model_validate(
+        await CreateTicketRequest(unit_of_work).create(data.cantidad, user.id)
+    )
 
-async def get_uow(
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> AsyncIterator[UnitOfWork]:
-    yield UnitOfWork(db)
+
+@router.get("/", response_model=list[TicketRequestDTO])
+async def list_ticket_requests(
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
+) -> list[TicketRequestDTO]:
+    return [
+        TicketRequestDTO.model_validate(ticket)
+        for ticket in await unit_of_work.ticket_requests.list_by_creator(user.id)
+    ]
 
 
-def get_ticket_printer() -> EscposNetworkTicketPrinter:
-    host = getenv("TICKET_PRINTER_HOST")
-    if not host:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="TICKET_PRINTER_HOST is required to approve tickets",
+
+
+## Estos endpoints son solo para el rol de aprobber
+@router.get("/{ticket_request_id}", response_model=TicketRequestDTO)
+async def get_ticket_request(
+    ticket_request_id: UUID,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
+) -> TicketRequestDTO:
+    try:
+        return TicketRequestDTO.model_validate(
+            await GetTicketRequest(unit_of_work).get(ticket_request_id, user.id)
         )
-    return EscposNetworkTicketPrinter(host, int(getenv("TICKET_PRINTER_PORT", "9100")))
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
 
 
-@router.get("/", response_model=list[TicketDTO])
-async def list_tickets(
-    uow: Annotated[UnitOfWork, Depends(get_uow)],
-    user: Annotated[User, Depends(current_user)],
-):
-    return await ListTickets(uow).list(user.id)
-
-
-@router.post("/", response_model=TicketDTO, status_code=status.HTTP_201_CREATED)
-async def create_ticket(
-    ticket: TicketCreateDTO,
-    uow: Annotated[UnitOfWork, Depends(get_uow)],
-    user: Annotated[User, Depends(current_user)],
-):
-    return await CreateTicket(uow).create(ticket, user.id)
-
-
-@router.patch("/{ticket_id}/approve", response_model=TicketDTO)
-async def approve_ticket(
-    ticket_id: UUID,
-    uow: Annotated[UnitOfWork, Depends(get_uow)],
+@router.post("/{ticket_request_id}/approve", response_class=HTMLResponse)
+async def approve_ticket_request(
+    request: Request,
+    ticket_request_id: UUID,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
     user: Annotated[User, Depends(require_approver)],
-    printer: Annotated[EscposNetworkTicketPrinter, Depends(get_ticket_printer)],
-):
+) -> HTMLResponse:
     try:
-        return await ApproveTicket(uow, printer).approve(ticket_id, user.id)
+        ticket_request = await ApproveTicketRequest(unit_of_work).approve(
+            ticket_request_id, user.id
+        )
+        return await PrintTicketRequest(unit_of_work, HtmlTicketPrinter()).render(
+            request, ticket_request_id, ticket_request.created_by_id
+        )
     except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
 
 
-@router.get("/{ticket_id}", response_model=TicketDTO)
-async def get_ticket(
-    ticket_id: UUID,
-    uow: Annotated[UnitOfWork, Depends(get_uow)],
+@router.get("/{ticket_request_id}/print", response_class=HTMLResponse)
+async def print_ticket_request(
+    request: Request,
+    ticket_request_id: UUID,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
     user: Annotated[User, Depends(current_user)],
-):
+) -> HTMLResponse:
     try:
-        return await GetTicketById(uow).get_by_id(ticket_id, user.id)
+        return await PrintTicketRequest(unit_of_work, HtmlTicketPrinter()).render(
+            request, ticket_request_id, user.id
+        )
     except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
-
-
-@router.delete("/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_ticket(
-    ticket_id: UUID,
-    uow: Annotated[UnitOfWork, Depends(get_uow)],
-    user: Annotated[User, Depends(current_user)],
-) -> None:
-    try:
-        await DeleteTicket(uow).delete(ticket_id, user.id)
-    except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error

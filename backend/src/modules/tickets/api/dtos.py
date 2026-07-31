@@ -4,27 +4,20 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.tickets.domain.entities.ticket import TicketRequestStatus
 
-class TicketCreateDTO(BaseModel):
-    title: str = Field(min_length=1, max_length=255)
-    description: str = Field(min_length=1)
+
+class TicketRequestCreateDTO(BaseModel):
     cantidad: int = Field(ge=1)
 
 
-class TicketDTO(BaseModel):
+class TicketRequestDTO(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
     id: UUID
-    title: str
-    description: str
-    status: str
-    codigo: str
-    codigo_qr: str
-    fecha_emision: datetime
-    fecha_creacion: datetime
     cantidad: int
-    aprobacion: bool
-    created_by_id: UUID | None
+    created_by_id: UUID
+    fecha_creacion: datetime
+    status: TicketRequestStatus
     approved_by_id: UUID | None
     approved_at: datetime | None
-

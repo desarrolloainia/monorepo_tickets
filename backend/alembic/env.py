@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from modules.tickets.infrastructure.sqlalchemy.persistence.models import TicketModel
+from modules.tickets.infrastructure.sqlalchemy.persistence.models import TicketRequestModel
 from modules.users.infrastructure.sqlalchemy.persistence.models import UserModel
 from shared.database import database_url
 
@@ -16,7 +16,7 @@ config.set_main_option("sqlalchemy.url", database_url)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-models = (TicketModel, UserModel)
+models = (TicketRequestModel, UserModel)
 target_metadata = models[0].metadata
 
 

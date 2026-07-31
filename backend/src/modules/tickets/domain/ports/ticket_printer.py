@@ -1,8 +1,13 @@
+from collections.abc import Sequence
 from typing import Protocol
 
-from modules.tickets.domain.entities.ticket import Ticket
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+
+from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 
 
 class TicketPrinter(Protocol):
-    async def print_ticket(self, ticket: Ticket) -> None:
-        ...
+    def render(
+        self, request: Request, tickets: Sequence[PrintableTicket], nombre: str
+    ) -> HTMLResponse: ...

@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tickets A4 - 3x4</title>
+
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      :root {
+        --page-w: 210mm;
+        --page-h: 297mm;
+
+        --label-w: 71mm;
+        --label-h: 74mm;
+
+        --grid-w: calc(3 * var(--label-w));
+        --grid-h: calc(4 * var(--label-h));
+
+        --offset-x: calc((var(--page-w) - var(--grid-w)) / 2);
+        --offset-y: calc((var(--page-h) - var(--grid-h)) / 2);
+
+        --nudge-x: 0mm;
+        --nudge-y: 0mm;
+
+        --brand-red: #c43d5a;
+        --text-color: #101423;
+        --font: Arial, Helvetica, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        color: var(--text-color);
+        font-family: var(--font);
+        background: white;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body {
+        width: var(--page-w);
+        min-height: var(--page-h);
+      }
+
+      .sheet {
+        position: relative;
+        width: var(--page-w);
+        height: var(--page-h);
+        margin: 0;
+        padding: 0;
+        background: white;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .grid {
+        position: absolute;
+        left: calc(var(--offset-x) + var(--nudge-x));
+        top: calc(var(--offset-y) + var(--nudge-y));
+        width: var(--grid-w);
+        height: var(--grid-h);
+        display: grid;
+        grid-template-columns: repeat(3, var(--label-w));
+        grid-template-rows: repeat(4, var(--label-h));
+        gap: 0;
+      }
+
+      .label {
+        position: relative;
+        width: var(--label-w);
+        height: var(--label-h);
+        overflow: hidden;
+        background: white;
+        border: none;
+      }
+
+      .label.empty {
+        border: none;
+      }
+
+      .ticket {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 3mm 4.5mm 3.5mm;
+        background: white;
+      }
+
+      .ticket-top {
+        position: relative;
+        width: 100%;
+        height: 18mm;
+      }
+
+      .red-band {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 14.5mm;
+        background: var(--brand-red);
+      }
+
+      .price-box {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 24mm;
+        height: 14.5mm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: var(--brand-red);
+        font-size: 11pt;
+        font-weight: 700;
+        letter-spacing: 0.3mm;
+      }
+
+      .logo-box {
+        position: absolute;
+        top: 1.5mm;
+        right: 0;
+        width: 40mm;
+        height: 11mm;
+        padding-right: 1mm;
+        text-align: right;
+        background: white;
+      }
+
+      .logo-ainia {
+        color: var(--brand-red);
+        font-size: 20pt;
+        font-weight: 500;
+        line-height: 0.85;
+        letter-spacing: 0.8mm;
+      }
+
+      .logo-underline {
+        position: absolute;
+        right: 0;
+        bottom: 1.5mm;
+        width: 38mm;
+        height: 1.2mm;
+        background: var(--brand-red);
+      }
+
+      .emission-date {
+        margin-top: 1.2mm;
+        text-align: right;
+        font-size: 8pt;
+        font-weight: 400;
+        line-height: 1.1;
+      }
+
+      .ticket-body {
+        padding-top: 4mm;
+        text-align: center;
+      }
+
+      .person-name {
+        margin-bottom: 1.6mm;
+        font-size: 9.5pt;
+        font-weight: 700;
+        letter-spacing: 0.7mm;
+        text-transform: uppercase;
+      }
+
+      .code-line {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 1.5mm;
+        margin-bottom: 2.5mm;
+        line-height: 1;
+      }
+
+      .code-label {
+        color: var(--text-color);
+        font-size: 13pt;
+        font-weight: 400;
+      }
+
+      .code-value {
+        color: var(--brand-red);
+        font-size: 13pt;
+        font-weight: 700;
+        letter-spacing: 0.4mm;
+      }
+
+      .barcode-container {
+        width: 100%;
+        height: 14mm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5mm;
+      }
+
+      .barcode {
+        width: 32mm;
+        max-width: 32mm;
+        height: 14mm;
+      }
+
+      .ticket-footer {
+        position: absolute;
+        right: 4.2mm;
+        bottom: 3.5mm;
+        left: 4.2mm;
+        text-align: center;
+      }
+
+      .footer-text {
+        margin-bottom: 1.2mm;
+        color: var(--text-color);
+        font-size: 8pt;
+        font-weight: 400;
+        line-height: 1.15;
+      }
+
+      .footer-line {
+        width: 100%;
+        height: 0.8mm;
+        background: var(--brand-red);
+      }
+
+      .firma-label {
+        background: white;
+        border: none;
+      }
+
+      .firma-ticket {
+        width: 100%;
+        height: 100%;
+        padding: 5mm 5mm 4mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .firma-header-text {
+        margin-bottom: 4mm;
+        color: var(--text-color);
+        font-size: 9pt;
+        font-weight: 400;
+        text-align: left;
+      }
+
+      .firma-nombre {
+        margin-bottom: 2mm;
+        font-size: 11pt;
+        font-weight: 700;
+        letter-spacing: 0.5mm;
+        text-transform: uppercase;
+      }
+
+      .firma-info-line {
+        color: var(--text-color);
+        font-size: 9pt;
+        font-weight: 400;
+        line-height: 1.6;
+      }
+
+      .firma-info-line .valor {
+        color: var(--brand-red);
+        font-weight: 700;
+      }
+
+      .firma-solicitante {
+        margin-top: 1mm;
+        color: var(--text-color);
+        font-size: 9pt;
+        font-weight: 400;
+        text-align: center;
+      }
+
+      .firma-espacio {
+        flex: 1;
+      }
+
+      .firma-linea-roja {
+        width: 100%;
+        height: 0.8mm;
+        margin-top: auto;
+        background: var(--brand-red);
+      }
+
+      @media screen {
+        body {
+          width: auto;
+          min-height: auto;
+          background: #f1f5f9;
+        }
+
+        .sheet {
+          margin: 10mm auto;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+        }
+
+        .sheet {
+          width: 210mm;
+          height: 297mm;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          page-break-after: always;
+          break-after: page;
+        }
+
+        .sheet:last-of-type {
+          page-break-after: auto;
+          break-after: auto;
+        }
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  </head>
+
+  <body onload="window.print()">
+    {% for tickets in grupos_tickets %}
+    <section class="sheet">
+      <div class="grid">
+        {% for ticket in tickets %}
+        <div class="label">
+          <div class="ticket">
+            <div class="ticket-top">
+              <div class="red-band"></div>
+
+              <div class="price-box">
+                {{ "%.2f"|format(ticket.precio_unitario)|replace(".", ",") }} €
+              </div>
+
+              <div class="logo-box">
+                <div class="logo-ainia">ainia</div>
+              </div>
+
+              <div class="logo-underline"></div>
+            </div>
+
+            <div class="emission-date">
+              Fecha emisión
+              {{ ticket.fecha_emision.strftime('%d/%m/%Y') if ticket.fecha_emision else '' }}
+            </div>
+
+            <div class="ticket-body">
+              <div class="person-name">
+                {{ ticket.nombre_persona }}
+              </div>
+
+              <div class="code-line">
+                <span class="code-label">Código:</span>
+                <span class="code-value">{{ ticket.codigo }}</span>
+              </div>
+
+              <div class="barcode-container">
+                <svg
+                  class="barcode"
+                  jsbarcode-format="CODE128"
+                  jsbarcode-value="{{ ticket.codigo|replace('-', '') }}"
+                  jsbarcode-displayvalue="true"
+                  jsbarcode-textmargin="0"
+                  jsbarcode-fontsize="8"
+                  jsbarcode-width="1.5"
+                  jsbarcode-height="30"
+                ></svg>
+              </div>
+            </div>
+
+            <div class="ticket-footer">
+              <div class="footer-text">
+                Talón de uso personal e intransferible,<br />
+                sólo utilizable durante días laborables
+              </div>
+
+              <div class="footer-line"></div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% for i in range(11 - tickets|length) %}
+        <div class="label empty"></div>
+        {% endfor %}
+
+        <div class="label firma-label">
+          <div class="firma-ticket">
+            <div class="firma-header-text">
+              Ticket de Restaurante a favor de:
+            </div>
+
+            <div class="firma-nombre">{{ nombre }}</div>
+
+            <div class="firma-info-line">
+              Del código:
+              <span class="valor">
+                {{ tickets[0].codigo if tickets else '' }}
+              </span>
+            </div>
+
+            <div class="firma-info-line">
+              al código:
+              <span class="valor">
+                {{ tickets[-1].codigo if tickets else '' }}
+              </span>
+            </div>
+
+            <div class="firma-info-line">
+              Entregado el día:
+              <span class="valor">
+                {{ tickets[0].fecha_emision.strftime('%d/%m/%Y') if tickets else '' }}
+              </span>
+            </div>
+
+            <div class="firma-solicitante">
+              Firma del solicitante:
+            </div>
+
+            <div class="firma-espacio"></div>
+            <div class="firma-linea-roja"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% endfor %}
+
+    <script>
+      window.addEventListener('load', function () {
+        JsBarcode('.barcode').init()
+      })
+    </script>
+  </body>
+</html>

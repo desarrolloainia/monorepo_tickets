@@ -9,6 +9,7 @@ dependencies = [
     "alembic>=1.18.5",
     "asyncpg>=0.31.0",
     "fastapi>=0.139.2",
+    "jinja2>=3.1",
     "pydantic-settings>=2.0",
     "python-barcode>=0.16.1",
     "python-escpos>=3.1",

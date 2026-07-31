@@ -3,9 +3,12 @@ from typing import Self, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.tickets.domain.ports.ticket_repository import TicketRepository
-from modules.tickets.infrastructure.sqlalchemy.methods.ticket_repository import (
-    SQLAlchemyTicketRepository,
+from modules.tickets.domain.ports.ticket_request_repository import (
+    TicketCodeRepository,
+    TicketRequestRepository,
+)
+from modules.tickets.infrastructure.sqlalchemy.methods.ticket_request_repository import (
+    SQLAlchemyTicketRequestRepository,
 )
 from modules.users.domain.ports.user_repository import UserRepository
 from modules.users.infrastructure.sqlalchemy.methods.user_repository import (
@@ -17,7 +20,12 @@ class UnitOfWork:
     # por cada modulo con repository creado se añade al constructor
     def __init__(self, session: AsyncSession):
         self._session: AsyncSession = session
-        self.tickets: TicketRepository = cast(TicketRepository, SQLAlchemyTicketRepository(session))
+        self.ticket_requests: TicketRequestRepository = cast(
+            TicketRequestRepository, SQLAlchemyTicketRequestRepository(session)
+        )
+        self.ticket_codes: TicketCodeRepository = cast(
+            TicketCodeRepository, SQLAlchemyTicketRequestRepository(session)
+        )
         self.users: UserRepository = cast(UserRepository, SQLAlchemyUserRepository(session))
 
     async def __aenter__(self) -> Self:

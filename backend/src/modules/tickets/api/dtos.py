@@ -1,14 +1,14 @@
 from datetime import datetime
-from typing import ClassVar
+from typing import ClassVar, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from modules.tickets.domain.entities.ticket import TicketRequestStatus
 
 
 class TicketRequestCreateDTO(BaseModel):
-    cantidad: int = Field(ge=1)
+    cantidad: Literal[11, 22]
 
 
 class TicketRequestDTO(BaseModel):

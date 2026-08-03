@@ -1,2 +1,22 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+:root {
+  color-scheme: light;
+  --tickets-ink: #14213d;
+  --tickets-muted: #657083;
+  --tickets-line: #dfe3e8;
+  --tickets-paper: #fbfaf7;
+  --tickets-canvas: #f2f1ed;
+}
+
+html {
+  background: var(--tickets-canvas);
+}
+
+body {
+  margin: 0;
+  background: var(--tickets-canvas);
+  color: var(--tickets-ink);
+  font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+}

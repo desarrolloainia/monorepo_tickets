@@ -186,8 +186,11 @@ export interface components {
     };
     /** TicketRequestCreateDTO */
     TicketRequestCreateDTO: {
-      /** Cantidad */
-      cantidad: number;
+      /**
+       * Cantidad
+       * @enum {integer}
+       */
+      cantidad: 11 | 22;
     };
     /** TicketRequestDTO */
     TicketRequestDTO: {

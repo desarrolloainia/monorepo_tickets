@@ -13,15 +13,24 @@ const { logout, user } = useAuth()
           <span>Tickets</span>
         </NuxtLink>
 
-        <div v-if="user" class="account">
-          <span class="account-name">{{ user.name }}</span>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-log-out"
-            aria-label="Cerrar sesión"
-            @click="logout"
-          />
+        <div class="header-actions">
+          <nav v-if="user?.role === 'approver'" aria-label="Navegación principal">
+            <NuxtLink to="/recepcion" class="reception-link">
+              <UIcon name="i-lucide-clipboard-check" aria-hidden="true" />
+              <span>Recepción</span>
+            </NuxtLink>
+          </nav>
+
+          <div v-if="user" class="account">
+            <span class="account-name">{{ user.name }}</span>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-log-out"
+              aria-label="Cerrar sesión"
+              @click="logout"
+            />
+          </div>
         </div>
       </UContainer>
     </header>
@@ -55,7 +64,9 @@ const { logout, user } = useAuth()
 }
 
 .brand-link,
-.account {
+.account,
+.header-actions,
+.reception-link {
   display: flex;
   align-items: center;
 }
@@ -84,6 +95,37 @@ const { logout, user } = useAuth()
   gap: 0.5rem;
 }
 
+.header-actions {
+  gap: clamp(0.4rem, 2vw, 1.25rem);
+}
+
+.reception-link {
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.65rem;
+  color: var(--tickets-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.reception-link:hover,
+.reception-link.router-link-active {
+  background: #e7ece7;
+  color: #2d6654;
+}
+
+.reception-link:focus-visible {
+  outline: 3px solid rgb(45 102 84 / 28%);
+  outline-offset: 2px;
+}
+
+.reception-link svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .account-name {
   max-width: 14rem;
   overflow: hidden;
@@ -95,6 +137,14 @@ const { logout, user } = useAuth()
 
 @media (max-width: 520px) {
   .account-name {
+    display: none;
+  }
+
+  .reception-link {
+    padding-inline: 0.6rem;
+  }
+
+  .reception-link span {
     display: none;
   }
 }

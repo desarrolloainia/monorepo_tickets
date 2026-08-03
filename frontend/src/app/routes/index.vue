@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { HomePage } from '@/pages/home'
+import { useAuth } from '@/shared/auth'
 
 definePageMeta({ middleware: 'auth' })
-</script>
 
-<template>
-  <HomePage />
-</template>
+const { user } = useAuth()
+
+await navigateTo(user.value?.role === 'approver' ? '/recepcion' : '/user', { replace: true })
+</script>

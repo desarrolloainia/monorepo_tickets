@@ -7,6 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "lint:fsd": "steiger src",
+    "generate:api": "openapi-typescript http://127.0.0.1:8000/openapi.json -o src/shared/api/openapi.ts",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck"

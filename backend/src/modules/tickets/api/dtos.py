@@ -21,3 +21,12 @@ class TicketRequestDTO(BaseModel):
     status: TicketRequestStatus
     approved_by_id: UUID | None
     approved_at: datetime | None
+
+
+class PendingTicketRequestDTO(BaseModel):
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+
+    id: UUID
+    requester_name: str
+    cantidad: int
+    fecha_creacion: datetime

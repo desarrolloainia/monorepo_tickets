@@ -6,7 +6,11 @@ from sqlalchemy import desc, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.tickets.domain.entities.ticket import TicketRequest, TicketRequestStatus
+from modules.tickets.domain.entities.ticket import (
+    PendingTicketRequest,
+    TicketRequest,
+    TicketRequestStatus,
+)
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 from modules.tickets.infrastructure.sqlalchemy.persistence.models import (
     IssuedTicketModel,
@@ -14,6 +18,7 @@ from modules.tickets.infrastructure.sqlalchemy.persistence.models import (
     TicketPriceConfigurationModel,
     TicketRequestModel,
 )
+from modules.users.infrastructure.sqlalchemy.persistence.models import UserModel
 
 
 class SQLAlchemyTicketRequestRepository:
@@ -114,3 +119,19 @@ class SQLAlchemyTicketRequestRepository:
             PrintableTicket("", model.codigo, model.fecha_emision, model.precio_unitario)
             for model in models
         ]
+
+    async def list_pending(self) -> list[PendingTicketRequest]:
+        rows = await self.session.execute(
+            select(
+                TicketRequestModel.id,
+                UserModel.name,
+                TicketRequestModel.cantidad,
+                TicketRequestModel.fecha_creacion,
+            )
+            .join(UserModel, TicketRequestModel.created_by_id == UserModel.id)
+            .where(
+                TicketRequestModel.status == TicketRequestStatus.PENDING,
+            )
+            .order_by(TicketRequestModel.fecha_creacion)
+        )
+        return [PendingTicketRequest(*row) for row in rows]

@@ -20,3 +20,11 @@ class TicketRequest:
     status: TicketRequestStatus = TicketRequestStatus.PENDING
     approved_by_id: UUID | None = None
     approved_at: datetime | None = None
+
+
+@dataclass(frozen=True)
+class PendingTicketRequest:
+    id: UUID
+    requester_name: str
+    cantidad: int
+    fecha_creacion: datetime

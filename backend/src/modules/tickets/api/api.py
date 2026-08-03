@@ -5,10 +5,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 
 from modules.auth.dependencies import current_user, get_uow
-from modules.tickets.api.dtos import TicketRequestCreateDTO, TicketRequestDTO
+from modules.tickets.api.dtos import (
+    PendingTicketRequestDTO,
+    TicketRequestCreateDTO,
+    TicketRequestDTO,
+)
 from modules.tickets.application.approve_ticket_request import ApproveTicketRequest
 from modules.tickets.application.create_ticket_request import CreateTicketRequest
 from modules.tickets.application.get_ticket_request import GetTicketRequest
+from modules.tickets.application.list_pending_tickets import ListPendingTickets
 from modules.tickets.application.print_ticket_request import PrintTicketRequest
 from modules.tickets.infrastructure.html_ticket_printer import HtmlTicketPrinter
 from modules.users.api.dependencies import require_approver
@@ -42,7 +47,18 @@ async def list_ticket_requests(
 
 
 
-## Estos endpoints son solo para el rol de aprobber
+## Estos endpoints son solo para el rol de aprobador
+@router.get("/pending", response_model=list[PendingTicketRequestDTO])
+async def list_pending_ticket_requests(
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    _: Annotated[User, Depends(require_approver)],
+) -> list[PendingTicketRequestDTO]:
+    return [
+        PendingTicketRequestDTO.model_validate(ticket)
+        for ticket in await ListPendingTickets(unit_of_work).list()
+    ]
+
+
 @router.get("/{ticket_request_id}", response_model=TicketRequestDTO)
 async def get_ticket_request(
     ticket_request_id: UUID,
@@ -57,20 +73,32 @@ async def get_ticket_request(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
 
 
-@router.post("/{ticket_request_id}/approve", response_class=HTMLResponse)
+@router.get("/pending/{ticket_request_id}", response_model=TicketRequestDTO)
+async def get_pending_ticket_request(
+    ticket_request_id: UUID,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    _: Annotated[User, Depends(require_approver)],
+) -> TicketRequestDTO:
+    try:
+        ticket_request = await GetTicketRequest(unit_of_work).get(ticket_request_id)
+        if ticket_request.status.value != "pending":
+            raise ValueError("La solicitud no está pendiente")
+        return TicketRequestDTO.model_validate(ticket_request)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@router.post("/{ticket_request_id}/approve", response_model=TicketRequestDTO)
 async def approve_ticket_request(
-    request: Request,
     ticket_request_id: UUID,
     unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
     user: Annotated[User, Depends(require_approver)],
-) -> HTMLResponse:
+) -> TicketRequestDTO:
     try:
         ticket_request = await ApproveTicketRequest(unit_of_work).approve(
             ticket_request_id, user.id
         )
-        return await PrintTicketRequest(unit_of_work, HtmlTicketPrinter()).render(
-            request, ticket_request_id, ticket_request.created_by_id
-        )
+        return TicketRequestDTO.model_validate(ticket_request)
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
 

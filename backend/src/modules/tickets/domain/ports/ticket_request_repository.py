@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Protocol
 from uuid import UUID
 
-from modules.tickets.domain.entities.ticket import TicketRequest
+from modules.tickets.domain.entities.ticket import PendingTicketRequest, TicketRequest
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 
 
@@ -24,7 +24,7 @@ class TicketRequestRepository(Protocol):
 
     async def list_issued(self, request_id: UUID) -> Sequence[PrintableTicket]: ...
 
-    async def list_pending(self, request_id: UUID) -> list[TicketRequest]: ...
+    async def list_pending(self) -> list[PendingTicketRequest]: ...
 
 
 class TicketCodeRepository(Protocol):

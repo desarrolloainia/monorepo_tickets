@@ -7,7 +7,12 @@ import pytest
 
 from modules.tickets.application.approve_ticket_request import ApproveTicketRequest
 from modules.tickets.application.generate_ticket_code import GenerateTicketCode
-from modules.tickets.domain.entities.ticket import TicketRequest, TicketRequestStatus
+from modules.tickets.application.list_pending_tickets import ListPendingTickets
+from modules.tickets.domain.entities.ticket import (
+    PendingTicketRequest,
+    TicketRequest,
+    TicketRequestStatus,
+)
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 from modules.users.domain.entities.users import User
 from shared.uow import UnitOfWork
@@ -36,6 +41,16 @@ class Tickets:
 
     async def add_issued(self, _request_id: UUID, tickets: list[PrintableTicket]) -> None:
         self.issued.extend(tickets)
+
+    async def list_pending(self) -> list[PendingTicketRequest]:
+        return [
+            PendingTicketRequest(
+                self.ticket_request.id,
+                "User",
+                self.ticket_request.cantidad,
+                self.ticket_request.fecha_creacion,
+            )
+        ]
 
 
 @final
@@ -102,3 +117,13 @@ async def test_ticket_code_is_monthly_and_zero_padded() -> None:
     generator = GenerateTicketCode(Codes())
     assert await generator.generate(datetime(2026, 7, 1)) == "2607-000001"
     assert await generator.generate(datetime(2026, 7, 1)) == "2607-000002"
+
+
+async def test_list_pending_returns_creator_pending_requests() -> None:
+    creator_id = uuid4()
+    ticket_request = TicketRequest(1, creator_id, datetime.now(UTC))
+    uow = TicketsUnitOfWork(ticket_request, User("oid", "user@example.com", "User"))
+
+    assert await ListPendingTickets(as_uow(uow)).list() == [
+        PendingTicketRequest(ticket_request.id, "User", 1, ticket_request.fecha_creacion)
+    ]

@@ -17,6 +17,9 @@ def test_ticket_router_has_approval_but_no_edit_route() -> None:
     assert ("/tickets/{ticket_request_id}/approve", "POST") in routes
     assert ("/tickets/{ticket_request_id}", "PATCH") not in routes
     assert ("/tickets/{ticket_request_id}", "PUT") not in routes
+    assert ("/tickets/pending", "GET") in routes
+    assert ("/tickets/pending/{ticket_request_id}", "GET") in routes
+    assert ("/tickets/{ticket_request_id}/approve", "POST") in routes
 
 
 def test_ticket_request_only_accepts_supported_quantities() -> None:

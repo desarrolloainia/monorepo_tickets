@@ -1,0 +1,124 @@
+{
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark",
+  },
+
+  "ui_font_size": 16,
+  "buffer_font_size": 14,
+  "buffer_font_family": "JetBrains Mono",
+
+  "tab_size": 2,
+  "hard_tabs": false,
+  "format_on_save": "on",
+  "remove_trailing_whitespace_on_save": true,
+  "ensure_final_newline_on_save": true,
+
+  "preferred_line_length": 100,
+  "show_wrap_guides": true,
+
+  "autosave": "on_focus_change",
+
+  "vim_mode": false,
+
+  "terminal": {
+    "dock": "bottom",
+    "working_directory": "current_project_directory",
+  },
+
+  "features": {
+    "copilot": true,
+  },
+
+  "languages": {
+    "TypeScript": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+    },
+
+    "TSX": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+    },
+
+    "JavaScript": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+    },
+
+    "JSON": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+
+    "Vue.js": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+    },
+
+    "CSS": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+
+    "HTML": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+
+    "Markdown": {
+      "formatter": "prettier",
+      "format_on_save": "on",
+    },
+  },
+
+  "lsp": {
+    "vue-language-server": {
+      "settings": {
+        "vue": {
+          "hybridMode": true,
+        },
+        "typescript": {
+          "inlayHints": {
+            "enumMemberValues": {
+              "enabled": true,
+            },
+            "functionLikeReturnTypes": {
+              "enabled": true,
+            },
+            "parameterNames": {
+              "enabled": "all",
+            },
+            "parameterTypes": {
+              "enabled": true,
+            },
+            "propertyDeclarationTypes": {
+              "enabled": true,
+            },
+            "variableTypes": {
+              "enabled": true,
+            },
+          },
+        },
+      },
+    },
+  },
+
+  "assistant": {
+    "enabled": true,
+    "default_model": "gpt-5.5",
+  },
+
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.nuxt",
+    "**/.output",
+    "**/dist",
+    "**/coverage",
+    "**/node_modules",
+    "**/.turbo",
+    "**/.pnpm-store",
+    "**/.agents",
+  ],
+}

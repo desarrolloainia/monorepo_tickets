@@ -1,4 +1,4 @@
-import { useAuth } from '~/src/shared/auth'
+import { useAuth } from '@/shared/auth'
 
 export default defineNuxtRouteMiddleware(async () => {
   const { loaded, refresh, user } = useAuth()

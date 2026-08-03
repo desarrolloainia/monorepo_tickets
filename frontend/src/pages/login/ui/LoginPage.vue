@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAuth } from '~/src/shared/auth'
+import { useAuth } from '@/shared/auth'
 
 const { loaded, login, refresh, user } = useAuth()
 

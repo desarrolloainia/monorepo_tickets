@@ -1,9 +1,6 @@
-export type AuthUser = {
-  id: string
-  email: string
-  name: string
-  role: 'user' | 'approver'
-}
+import type { UserDTO } from '@/shared/api'
+
+export type AuthUser = UserDTO
 
 export function useAuth() {
   const config = useRuntimeConfig()

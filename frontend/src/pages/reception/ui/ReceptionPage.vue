@@ -20,7 +20,7 @@ const {
         <p class="page-eyebrow">Mesa de recepción</p>
         <h1 class="page-title">Solicitudes por atender</h1>
         <p class="page-description">
-          Revisa cada solicitud y apruébala con un solo clic. La impresión se inicia automáticamente.
+          Revisa cada solicitud y apruébala. Chrome te pedirá elegir la impresora antes de imprimir.
         </p>
       </div>
 

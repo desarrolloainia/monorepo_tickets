@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import { computed, shallowRef } from 'vue'
-
-const printers = [
-  { id: 'reception-zebra', label: 'Zebra ZD421 · Recepción' },
-  { id: 'kitchen-epson', label: 'Epson TM-T20III · Cocina' },
-  { id: 'office-brother', label: 'Brother QL-820NWB · Oficina' }
-]
-
-const selectedPrinterId = shallowRef<string>()
-const connectedPrinterId = shallowRef<string>()
-
-const connectedPrinter = computed(() => printers.find(printer => printer.id === connectedPrinterId.value))
-
-function addPrinter() {
-  connectedPrinterId.value = selectedPrinterId.value
-}
-</script>
-
 <template>
   <section class="printer-card" aria-labelledby="printer-title">
     <div class="printer-icon" aria-hidden="true">
@@ -26,44 +7,26 @@ function addPrinter() {
     <p class="card-eyebrow">Dispositivo de salida</p>
     <h2 id="printer-title" class="card-title">Impresora</h2>
     <p class="card-description">
-      Busca una impresora cercana y déjala preparada para las próximas aprobaciones.
+      Chrome mostrará las impresoras instaladas en Windows al aprobar cada solicitud.
     </p>
 
-    <div v-if="connectedPrinter" class="connected-printer" aria-live="polite">
+    <div class="connected-printer" aria-live="polite">
       <span class="connection-dot" aria-hidden="true" />
       <div>
-        <span class="connection-label">Añadida</span>
-        <strong>{{ connectedPrinter.label }}</strong>
+        <span class="connection-label">Preparado</span>
+        <strong>Chrome + impresoras de Windows</strong>
       </div>
     </div>
 
-    <form class="printer-form" @submit.prevent="addPrinter">
-      <label for="printer-select" class="field-label">Buscar impresora</label>
-      <USelectMenu
-        id="printer-select"
-        v-model="selectedPrinterId"
-        :items="printers"
-        value-key="id"
-        label-key="label"
-        icon="i-lucide-search"
-        placeholder="Selecciona un dispositivo"
-        :search-input="{ placeholder: 'Buscar por nombre…' }"
-        class="printer-select"
-      />
-      <UButton
-        type="submit"
-        block
-        color="neutral"
-        icon="i-lucide-plus"
-        :disabled="!selectedPrinterId || selectedPrinterId === connectedPrinterId"
-      >
-        {{ connectedPrinter ? 'Cambiar impresora' : 'Añadir impresora' }}
-      </UButton>
-    </form>
+    <ol class="printer-steps">
+      <li>Confirma la solicitud en el modal.</li>
+      <li>Elige o añade la impresora en Chrome.</li>
+      <li>Revisa la vista previa e imprime.</li>
+    </ol>
 
     <p class="demo-note">
       <UIcon name="i-lucide-info" aria-hidden="true" />
-      Configuración de demostración guardada solo durante esta sesión.
+      Por seguridad, Chrome no permite que esta web seleccione una impresora por ti.
     </p>
   </section>
 </template>
@@ -171,19 +134,14 @@ function addPrinter() {
   line-height: 1.35;
 }
 
-.printer-form {
+.printer-steps {
   display: grid;
-  gap: 0.75rem;
-}
-
-.field-label {
-  color: var(--tickets-ink);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.printer-select {
-  width: 100%;
+  gap: 0.65rem;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--tickets-muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
 }
 
 .demo-note {

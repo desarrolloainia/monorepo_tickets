@@ -10,13 +10,15 @@ const props = defineProps<{
   requests: PendingTicketRequestDTO[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   approve: [id: string]
   retry: []
 }>()
 
 const itemsPerPage = 8
 const page = shallowRef(1)
+const printModalOpen = shallowRef(false)
+const selectedRequest = shallowRef<PendingTicketRequestDTO>()
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: '2-digit',
@@ -41,6 +43,17 @@ watch(() => props.requests.length, (length) => {
 
 function formatDate(value: string) {
   return dateFormatter.format(new Date(value))
+}
+
+function openPrintModal(request: PendingTicketRequestDTO) {
+  selectedRequest.value = request
+  printModalOpen.value = true
+}
+
+function confirmApproval() {
+  if (!selectedRequest.value) return
+  emit('approve', selectedRequest.value.id)
+  printModalOpen.value = false
 }
 </script>
 
@@ -102,12 +115,12 @@ function formatDate(value: string) {
                 <UButton
                   color="success"
                   variant="soft"
-                  icon="i-lucide-check"
+                  icon="i-lucide-printer"
                   :loading="approvingIds.has(request.id)"
-                  :aria-label="`Aprobar solicitud de ${request.requester_name}`"
-                  @click="$emit('approve', request.id)"
+                  :aria-label="`Aprobar e imprimir solicitud de ${request.requester_name}`"
+                  @click="openPrintModal(request)"
                 >
-                  Aprobar
+                  Aprobar e imprimir
                 </UButton>
               </td>
             </tr>
@@ -138,9 +151,9 @@ function formatDate(value: string) {
             block
             color="success"
             variant="soft"
-            icon="i-lucide-check"
+            icon="i-lucide-printer"
             :loading="approvingIds.has(request.id)"
-            @click="$emit('approve', request.id)"
+            @click="openPrintModal(request)"
           >
             Aprobar e imprimir
           </UButton>
@@ -162,6 +175,44 @@ function formatDate(value: string) {
       </footer>
     </template>
   </section>
+
+  <UModal
+    v-model:open="printModalOpen"
+    title="Aprobar e imprimir"
+    description="Chrome te pedirá que elijas una impresora antes de imprimir."
+    :ui="{ content: 'sm:max-w-lg' }"
+  >
+    <template #body>
+      <div v-if="selectedRequest" class="grid gap-4">
+        <div class="rounded-xl border border-(--tickets-line) bg-(--tickets-paper) p-4">
+          <p class="m-0 text-xs font-bold uppercase tracking-widest text-[#2d6654]">Solicitud</p>
+          <strong class="mt-2 block text-lg text-(--tickets-ink)">{{ selectedRequest.requester_name }}</strong>
+          <p class="mt-1 mb-0 text-sm text-(--tickets-muted)">
+            {{ selectedRequest.cantidad }} tickets · {{ formatDate(selectedRequest.fecha_creacion) }}
+          </p>
+        </div>
+
+        <div class="flex gap-3 rounded-xl bg-[#edf4ef] p-4 text-sm leading-6 text-[#285b4b]">
+          <UIcon name="i-lucide-printer-check" class="mt-1 size-4 shrink-0" aria-hidden="true" />
+          <p class="m-0">
+            Después de aprobar se abrirá una pestaña con la vista A4 y el diálogo de impresión de Chrome.
+          </p>
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <UButton color="neutral" variant="ghost" label="Cancelar" @click="printModalOpen = false" />
+        <UButton
+          color="success"
+          icon="i-lucide-printer"
+          label="Aprobar y elegir impresora"
+          @click="confirmApproval"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <style scoped>

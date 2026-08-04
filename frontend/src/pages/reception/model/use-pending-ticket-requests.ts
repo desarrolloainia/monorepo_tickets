@@ -29,19 +29,35 @@ export async function usePendingTicketRequests() {
   async function approve(id: string) {
     if (approvingIds.value.has(id)) return
 
+    // ponytail: Chrome's native dialog owns printer discovery and selection.
+    const printWindow = window.open('about:blank', '_blank')
+    if (!printWindow) {
+      toast.add({
+        title: 'Chrome bloqueó la impresión',
+        description: 'Permite las ventanas emergentes para aprobar e imprimir.',
+        icon: 'i-lucide-panels-top-left',
+        color: 'warning'
+      })
+      return
+    }
+    printWindow.opener = null
+
     approvingIds.value = new Set(approvingIds.value).add(id)
 
     try {
       await approveTicketRequest(config.public.apiBase, id)
       requests.value = requests.value.filter(request => request.id !== id)
+      printWindow.location.href = new URL(`/tickets/${id}/print`, config.public.apiBase).toString()
       toast.add({
         title: 'Solicitud aprobada',
-        description: 'El backend ha iniciado la impresión de los tickets.',
+        description: 'Elige la impresora en la pestaña que acaba de abrirse.',
         icon: 'i-lucide-printer-check',
         color: 'success'
       })
     } catch (cause) {
-      const statusCode = (cause as { statusCode?: number }).statusCode
+      printWindow.close()
+      const error = cause as { data?: { detail?: string }, statusCode?: number }
+      const statusCode = error.statusCode
 
       if (statusCode === 401) {
         await navigateTo('/login')
@@ -50,14 +66,12 @@ export async function usePendingTicketRequests() {
 
       toast.add({
         title: 'No se pudo aprobar',
-        description: statusCode === 409
-          ? 'Esta solicitud ya no está pendiente.'
-          : 'Vuelve a intentarlo en unos segundos.',
+        description: error.data?.detail ?? 'Vuelve a intentarlo en unos segundos.',
         icon: 'i-lucide-circle-alert',
         color: 'error'
       })
 
-      if (statusCode === 409 || statusCode === 404) await refresh()
+      if (statusCode === 400 || statusCode === 409 || statusCode === 404) await refresh()
     } finally {
       const nextIds = new Set(approvingIds.value)
       nextIds.delete(id)

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from modules.tickets.application.generate_ticket_code import GenerateTicketCode
@@ -18,9 +19,10 @@ class ApproveTicketRequest:
         if request.status != TicketRequestStatus.PENDING:
             raise ValueError("La solicitud ya ha sido aprobada")
 
+        # ponytail: temporary backend default; replace it when price administration exists.
         price = await self.uow.ticket_requests.current_price()
         if price is None:
-            raise ValueError("No hay precio de ticket configurado")
+            price = Decimal("5.50")
         issued_at = datetime.now(UTC)
         generator = GenerateTicketCode(self.uow.ticket_codes)
         tickets = [

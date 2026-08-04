@@ -342,7 +342,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   </head>
 
-  <body onload="window.print()">
+  <body>
     {% for tickets in grupos_tickets %}
     <section class="sheet">
       <div class="grid">
@@ -452,6 +452,7 @@
     <script>
       window.addEventListener('load', function () {
         JsBarcode('.barcode').init()
+        window.print()
       })
     </script>
   </body>

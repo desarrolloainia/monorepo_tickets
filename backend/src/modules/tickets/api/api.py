@@ -22,7 +22,8 @@ from shared.uow import UnitOfWork
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
-#Estos endpoints para los empleados
+
+# Estos endpoints para los empleados
 @router.post("/", response_model=TicketRequestDTO, status_code=status.HTTP_201_CREATED)
 async def create_ticket_request(
     data: TicketRequestCreateDTO,
@@ -43,8 +44,6 @@ async def list_ticket_requests(
         TicketRequestDTO.model_validate(ticket)
         for ticket in await unit_of_work.ticket_requests.list_by_creator(user.id)
     ]
-
-
 
 
 ## Estos endpoints son solo para el rol de aprobador
@@ -112,7 +111,7 @@ async def print_ticket_request(
 ) -> HTMLResponse:
     try:
         return await PrintTicketRequest(unit_of_work, HtmlTicketPrinter()).render(
-            request, ticket_request_id, user.id
+            request, ticket_request_id, user
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error

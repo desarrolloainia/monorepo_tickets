@@ -20,3 +20,5 @@ def test_html_printer_groups_twelve_tickets_into_eleven_and_one() -> None:
     assert html.count('class="label firma-label"') == 2
     assert html.count('class="label empty"') == 10
     assert all(ticket.codigo in html for ticket in tickets)
+    assert "<body onload=" not in html
+    assert html.index("JsBarcode('.barcode').init()") < html.index("window.print()")

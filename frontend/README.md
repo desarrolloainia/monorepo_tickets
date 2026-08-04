@@ -1,75 +1,32 @@
-# Nuxt Minimal Starter
+# Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Aplicacion Nuxt 4 del sistema de tickets. Incluye login Microsoft, portal del empleado, historial paginado, visor A4 y cola de recepcion con aprobacion e impresion.
 
-## Setup
+## Documentacion
 
-Make sure to install dependencies:
+- [Referencia completa de modulos](../docs/frontend.md)
+- [Arquitectura del sistema](../docs/architecture.md)
+- [Guia general](../README.md)
+
+## Inicio rapido
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+La configuracion se copia desde `.env.example`. La web queda en `http://localhost:3000`.
 
-Build the application for production:
+## Calidad
 
 ```bash
-# npm
-npm run build
-
-# pnpm
+pnpm typecheck
+pnpm lint:fsd
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+Con la API en ejecucion, regenerar el contrato con:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+pnpm generate:api
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

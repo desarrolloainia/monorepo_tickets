@@ -452,7 +452,9 @@
     <script>
       window.addEventListener('load', function () {
         JsBarcode('.barcode').init()
+        {% if open_print_dialog %}
         window.print()
+        {% endif %}
       })
     </script>
   </body>

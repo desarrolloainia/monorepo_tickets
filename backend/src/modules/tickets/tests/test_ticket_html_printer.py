@@ -14,11 +14,16 @@ def test_html_printer_groups_twelve_tickets_into_eleven_and_one() -> None:
     ]
     request = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
 
-    html = bytes(HtmlTicketPrinter().render(request, tickets, "User").body).decode()
+    printer = HtmlTicketPrinter()
+    html = bytes(printer.render(request, tickets, "User", False).body).decode()
+    printable_html = bytes(printer.render(request, tickets, "User", True).body).decode()
 
     assert html.count('<section class="sheet">') == 2
     assert html.count('class="label firma-label"') == 2
     assert html.count('class="label empty"') == 10
     assert all(ticket.codigo in html for ticket in tickets)
     assert "<body onload=" not in html
-    assert html.index("JsBarcode('.barcode').init()") < html.index("window.print()")
+    assert "window.print()" not in html
+    assert printable_html.index("JsBarcode('.barcode').init()") < printable_html.index(
+        "window.print()"
+    )

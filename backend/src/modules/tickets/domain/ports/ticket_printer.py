@@ -9,5 +9,9 @@ from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 
 class TicketPrinter(Protocol):
     def render(
-        self, request: Request, tickets: Sequence[PrintableTicket], nombre: str
+        self,
+        request: Request,
+        tickets: Sequence[PrintableTicket],
+        nombre: str,
+        open_print_dialog: bool,
     ) -> HTMLResponse: ...

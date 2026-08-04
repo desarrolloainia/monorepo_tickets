@@ -14,12 +14,20 @@ class HtmlTicketPrinter:
         self.templates = Jinja2Templates(directory=template_dir)
 
     def render(
-        self, request: Request, tickets: Sequence[PrintableTicket], nombre: str
+        self,
+        request: Request,
+        tickets: Sequence[PrintableTicket],
+        nombre: str,
+        open_print_dialog: bool,
     ) -> HTMLResponse:
         # ponytail: the template reserves the twelfth cell for the signature.
         groups = [tickets[index : index + 11] for index in range(0, len(tickets), 11)]
         return self.templates.TemplateResponse(
             request=request,
             name="tickets.html",
-            context={"grupos_tickets": groups, "nombre": nombre},
+            context={
+                "grupos_tickets": groups,
+                "nombre": nombre,
+                "open_print_dialog": open_print_dialog,
+            },
         )

@@ -17,7 +17,7 @@ dev web:
 	pnpm --dir frontend dev
 
 api:
-	uv run --directory backend python main.py
+	uv run --directory backend uvicorn main:app --app-dir src --reload
 
 build:
 	pnpm --dir frontend build

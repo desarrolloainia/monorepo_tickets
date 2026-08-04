@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, shallowRef, watch } from 'vue'
+
 import type { TicketRequestDTO, TicketRequestStatus } from '@/shared/api'
 
 const props = defineProps<{
@@ -12,6 +14,12 @@ defineEmits<{
   retry: []
 }>()
 
+const itemsPerPage = 8
+const page = shallowRef(1)
+const previewOpen = shallowRef(false)
+const selectedPreviewUrl = shallowRef<string>()
+const previewLoading = shallowRef(false)
+
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: '2-digit',
   month: 'short',
@@ -24,12 +32,37 @@ const statusLabels: Record<TicketRequestStatus, string> = {
   rejected: 'Rechazada'
 }
 
+const paginatedRequests = computed(() => {
+  const start = (page.value - 1) * itemsPerPage
+  return props.requests.slice(start, start + itemsPerPage)
+})
+
+const rangeStart = computed(() => props.requests.length === 0 ? 0 : (page.value - 1) * itemsPerPage + 1)
+const rangeEnd = computed(() => Math.min(page.value * itemsPerPage, props.requests.length))
+
+watch(() => props.requests.length, (length) => {
+  const lastPage = Math.max(1, Math.ceil(length / itemsPerPage))
+  if (page.value > lastPage) page.value = lastPage
+})
+
+watch(previewOpen, (open) => {
+  if (open) return
+  selectedPreviewUrl.value = undefined
+  previewLoading.value = false
+})
+
 function formatDate(value: string) {
   return dateFormatter.format(new Date(value))
 }
 
-function printUrl(id: string) {
+function previewUrl(id: string) {
   return new URL(`/tickets/${id}/print`, props.printBaseUrl).href
+}
+
+function openPreview(id: string) {
+  previewLoading.value = true
+  selectedPreviewUrl.value = previewUrl(id)
+  previewOpen.value = true
 }
 </script>
 
@@ -65,7 +98,7 @@ function printUrl(id: string) {
     </div>
 
     <ul v-else class="request-list">
-      <li v-for="request in requests" :key="request.id" class="request-row">
+      <li v-for="request in paginatedRequests" :key="request.id" class="request-row">
         <div class="request-date">
           <span class="mobile-label">Fecha</span>
           <time :datetime="request.fecha_creacion">{{ formatDate(request.fecha_creacion) }}</time>
@@ -88,21 +121,59 @@ function printUrl(id: string) {
         </div>
 
         <div class="request-action">
-          <a
+          <button
             v-if="request.status === 'approved'"
+            type="button"
             class="view-link"
-            :href="printUrl(request.id)"
-            target="_blank"
-            rel="noopener noreferrer"
+            @click="openPreview(request.id)"
           >
-            Ver tickets
-            <UIcon name="i-lucide-arrow-up-right" class="view-icon" aria-hidden="true" />
-          </a>
+            Previsualizar tickets
+            <UIcon name="i-lucide-eye" class="view-icon" aria-hidden="true" />
+          </button>
           <span v-else class="action-placeholder">—</span>
         </div>
       </li>
     </ul>
+
+    <footer v-if="requests.length > 0" class="history-footer">
+      <p>{{ rangeStart }}–{{ rangeEnd }} de {{ requests.length }} solicitudes</p>
+      <UPagination
+        v-model:page="page"
+        :items-per-page="itemsPerPage"
+        :total="requests.length"
+        :sibling-count="1"
+        color="neutral"
+        active-color="success"
+        variant="ghost"
+        size="sm"
+      />
+    </footer>
   </section>
+
+  <UModal
+    v-model:open="previewOpen"
+    fullscreen
+    title="Previsualización de tickets"
+    description="Documento A4 de solo lectura"
+    :ui="{ body: 'p-0 sm:p-0 overflow-hidden' }"
+  >
+    <template #body>
+      <div class="preview-viewer">
+        <div v-if="previewLoading" class="preview-loading" aria-live="polite">
+          <UIcon name="i-lucide-loader-circle" class="preview-spinner" aria-hidden="true" />
+          <span>Preparando documento…</span>
+        </div>
+        <iframe
+          v-if="selectedPreviewUrl"
+          class="preview-frame"
+          :class="{ 'preview-frame--loading': previewLoading }"
+          :src="selectedPreviewUrl"
+          title="Documento A4 con los tickets aprobados"
+          @load="previewLoading = false"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <style scoped>
@@ -209,6 +280,23 @@ function printUrl(id: string) {
   list-style: none;
 }
 
+.history-footer {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  border-top: 1px solid var(--tickets-line);
+  color: var(--tickets-muted);
+  font-size: 0.72rem;
+}
+
+.history-footer p {
+  margin: 0;
+  white-space: nowrap;
+}
+
 .request-row {
   display: grid;
   min-height: 4.8rem;
@@ -276,10 +364,57 @@ function printUrl(id: string) {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--tickets-ink);
+  cursor: pointer;
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
+}
+
+.preview-viewer {
+  position: relative;
+  height: calc(100dvh - 5.5rem);
+  overflow: hidden;
+  background: #343b48;
+}
+
+.preview-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #f1f5f9;
+  transition: opacity 160ms ease;
+}
+
+.preview-frame--loading {
+  opacity: 0;
+}
+
+.preview-loading {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.preview-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .view-link:hover {
@@ -344,6 +479,12 @@ function printUrl(id: string) {
 
   .mobile-label {
     display: block;
+  }
+
+  .history-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-inline: 1.25rem;
   }
 }
 </style>

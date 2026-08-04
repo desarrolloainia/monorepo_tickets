@@ -32,4 +32,6 @@ class PrintTicketRequest:
             )
             for ticket in await self.uow.ticket_requests.list_issued(request_id)
         ]
-        return self.printer.render(request, tickets, creator.name)
+        return self.printer.render(
+            request, tickets, creator.name, requester.role == UserRole.APPROVER
+        )

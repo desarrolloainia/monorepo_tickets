@@ -86,13 +86,19 @@ class Printer:
     def __init__(self) -> None:
         self.tickets: list[PrintableTicket] = []
         self.nombre = ""
+        self.open_print_dialog = False
 
     def render(
-        self, request: Request, tickets: Sequence[PrintableTicket], nombre: str
+        self,
+        request: Request,
+        tickets: Sequence[PrintableTicket],
+        nombre: str,
+        open_print_dialog: bool,
     ) -> HTMLResponse:
         del request
         self.tickets = list(tickets)
         self.nombre = nombre
+        self.open_print_dialog = open_print_dialog
         return HTMLResponse("ok")
 
 
@@ -186,6 +192,7 @@ async def test_creator_and_approver_can_print_an_approved_request(
 
     assert printer.nombre == "Creator"
     assert [ticket.nombre_persona for ticket in printer.tickets] == ["Creator"]
+    assert printer.open_print_dialog is as_approver
 
 
 async def test_user_cannot_print_another_users_request() -> None:

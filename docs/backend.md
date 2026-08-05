@@ -47,7 +47,7 @@ flowchart TD
 Punto de composicion de la API:
 
 - Crea `FastAPI`.
-- Configura CORS para `http://localhost:3000` con cookies.
+- Configura CORS desde `CORS_ORIGINS` con cookies.
 - Monta los routers de autenticacion, usuarios y tickets.
 
 No crea tablas ni ejecuta migraciones al arrancar.
@@ -115,6 +115,19 @@ modules/auth/
 | `AUTH_SUCCESS_REDIRECT_URL` | Destino frontend tras login |
 | `AUTH_COOKIE_SECURE` | Marca `Secure` de cookies |
 
+En produccion, con la API publicada bajo `/backend`, los valores relevantes son:
+
+```dotenv
+MICROSOFT_REDIRECT_URI=https://tickets.ainia.com/backend/auth/microsoft/callback
+AUTH_SUCCESS_REDIRECT_URL=https://tickets.ainia.com
+AUTH_COOKIE_SECURE=true
+CORS_ORIGINS=https://tickets.ainia.com
+```
+
+La URI de callback debe coincidir exactamente con la registrada en Microsoft Entra ID. Dokploy
+elimina `/backend` antes de reenviar la peticion, por lo que FastAPI sigue recibiendo rutas
+internas como `/auth/microsoft/callback`.
+
 Constantes relevantes:
 
 - Cookie de sesion: `access_token`.
@@ -132,7 +145,14 @@ Constantes relevantes:
 - Solicita el scope `email`.
 - Rechaza respuestas de error o claims ausentes.
 
-MSAL es sincrono; el router lo ejecuta con `asyncio.to_thread()` para no bloquear el event loop.
+El modulo crea un unico `microsoft_oauth` al importar la aplicacion. Su
+`ConfidentialClientApplication` se construye una vez y se reutiliza para generar URLs e
+intercambiar codigos. Esto permite que MSAL conserve en memoria metadatos de la autoridad y su
+cache interna, evitando repetir descubrimiento y conexiones a Microsoft en cada login.
+
+MSAL es sincrono; el router mantiene `asyncio.to_thread()` para que las llamadas de red no
+bloqueen el event loop de FastAPI. La reutilizacion reduce latencia, mientras `to_thread()`
+mantiene la concurrencia del servidor.
 
 ### `internal_token_service.py`
 
@@ -146,7 +166,8 @@ MSAL es sincrono; el router lo ejecuta con `asyncio.to_thread()` para no bloquea
 2. Valida JWT, expiracion, issuer y audience.
 3. Convierte `sub` a UUID.
 4. Busca el usuario actual.
-5. Devuelve 401 ante cualquier sesion invalida o usuario eliminado.
+5. Comprueba que su identidad Microsoft no este bloqueada.
+6. Devuelve 401 ante cualquier sesion invalida, usuario eliminado o identidad bloqueada.
 
 ### `router.py`
 
@@ -162,6 +183,7 @@ sequenceDiagram
     actor Browser
     participant Router
     participant MSAL
+    participant Blocked as Blocked users
     participant Sync as SyncMicrosoftUser
     participant Token as TokenService
 
@@ -169,11 +191,21 @@ sequenceDiagram
     Router->>MSAL: authorization_url(state)
     Router-->>Browser: 302 + oauth_state
     Browser->>Router: callback(code, state)
+    Router->>Router: Comparar state y oauth_state
     Router->>MSAL: exchange_code(code)
-    Router->>Sync: sync(claims)
-    Router->>Token: create(user)
-    Router-->>Browser: 302 + access_token
+    Router->>Blocked: is_blocked(microsoft_oid)
+    alt Identidad bloqueada
+        Router-->>Browser: 302 /login?error=blocked sin sesion
+    else Identidad permitida
+        Router->>Sync: sync(claims)
+        Router->>Token: create(user)
+        Router-->>Browser: 302 + access_token
+    end
 ```
+
+Las cookies `oauth_state` y `access_token` son `HttpOnly`, usan `SameSite=Lax` y en produccion
+llevan `Secure`. `oauth_state` dura 10 minutos; la sesion interna dura una hora. El callback
+elimina la cookie de state al terminar.
 
 ## Modulo `users`
 

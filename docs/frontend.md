@@ -123,7 +123,7 @@ Mantener una unica sesion reactiva para layout, middleware y paginas.
 Metodos:
 
 - `refresh()`: llama `GET /auth/me`, reenvia cookie durante SSR y actualiza estado.
-- `login()`: navega el navegador a `/auth/microsoft/login`.
+- `login()`: navega a `${apiBase}/auth/microsoft/login`, conservando el prefijo `/backend`.
 - `logout()`: llama `POST /auth/logout`, limpia estado y navega a `/login`.
 
 ```mermaid
@@ -411,13 +411,41 @@ No hay interceptor HTTP, telemetria ni error boundary personalizado.
 - `srcDir: "src"`.
 - Modulo `@nuxt/ui`.
 - API publica por defecto `http://localhost:8000`.
+- Proxy Nitro `/backend/**` hacia `http://api:8000/**`.
 - Directorios personalizados para pages, layouts y middleware.
 
-Variable:
+Configuracion local:
 
 ```dotenv
 NUXT_PUBLIC_API_BASE=http://localhost:8000
 ```
+
+Configuracion de produccion:
+
+```dotenv
+NUXT_PUBLIC_API_BASE=/backend
+```
+
+### Resolucion de la API en produccion
+
+La misma ruta relativa tiene dos recorridos:
+
+```mermaid
+flowchart LR
+    Browser[Navegador] -->|/backend/*| Traefik[Dokploy / Traefik]
+    Traefik -->|Strip Path| API[FastAPI :8000]
+    SSR[Nuxt SSR] -->|/backend/*| Nitro[Nitro routeRules]
+    Nitro -->|http://api:8000/*| API
+```
+
+- En el navegador, Dokploy dirige `/backend` al servicio `api` y elimina el prefijo.
+- Durante SSR, `$fetch` resuelve la ruta internamente y Nitro la envia al nombre Docker `api`.
+- `useRequestHeaders(['cookie'])` reenvia la cookie de la peticion original a FastAPI.
+- Login, logout, consultas e impresion comparten `config.public.apiBase`.
+
+Antes se usaba la URL publica absoluta durante SSR. Eso obligaba al contenedor frontend a salir
+por DNS, TLS y Traefik para volver al mismo despliegue, y produjo esperas de aproximadamente 21
+segundos antes de `/auth/me`. La ruta relativa con proxy interno elimina ese recorrido circular.
 
 ## Scripts
 
@@ -445,7 +473,7 @@ pnpm --dir frontend build
 Limites actuales:
 
 - Sin E2E ni pruebas de componentes.
-- API base y CORS deben coordinarse manualmente.
+- Los dominios, `Strip Path` y variables de produccion se configuran en Dokploy.
 - El iframe no puede leer errores HTTP cross-origin.
 - La paginacion es cliente; el backend devuelve la lista completa.
 - La seleccion de impresora pertenece a Chrome, no a la aplicacion.

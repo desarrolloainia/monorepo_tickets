@@ -84,29 +84,67 @@ El frontend sigue una variante pequena de Feature-Sliced Design: `app` compone, 
 ```mermaid
 sequenceDiagram
     actor Browser
+    participant Proxy as Dokploy / Traefik
     participant API as Auth Router
-    participant Microsoft
+    participant Microsoft as Microsoft Entra ID
     participant Users as User Repository
     participant JWT as TokenService
+    participant Nuxt as Nuxt SSR
 
-    Browser->>API: GET /auth/microsoft/login
+    Browser->>Proxy: GET /backend/auth/microsoft/login
+    Proxy->>API: GET /auth/microsoft/login (Strip Path)
     API-->>Browser: 302 Microsoft + cookie oauth_state
     Browser->>Microsoft: Autorizacion
-    Microsoft-->>Browser: Callback con code y state
-    Browser->>API: GET /auth/microsoft/callback
+    Microsoft-->>Browser: /backend/auth/microsoft/callback?code&state
+    Browser->>Proxy: Callback con code y state
+    Proxy->>API: GET /auth/microsoft/callback
+    API->>API: Valida state contra cookie oauth_state
     API->>Microsoft: Intercambia code
     Microsoft-->>API: id_token_claims
+    API->>Users: Comprueba identidad bloqueada
     API->>Users: Crea o sincroniza usuario
     API->>JWT: Firma token interno HS256
-    API-->>Browser: 302 frontend + cookie access_token HttpOnly
+    API-->>Browser: 302 / + cookie access_token HttpOnly, Secure
+    Browser->>Nuxt: GET / con access_token
+    Nuxt->>API: GET /auth/me por red Docker
+    API-->>Nuxt: Usuario y rol actuales
+    Nuxt-->>Browser: HTML de la ruta autorizada
 ```
 
 El JWT solo contiene el ID del usuario. Cada peticion protegida vuelve a consultar PostgreSQL, por lo que un cambio de rol o una eliminacion se aplica inmediatamente.
+
+`MicrosoftOAuth` conserva una unica instancia de `ConfidentialClientApplication` durante la vida
+del proceso. MSAL reutiliza metadatos y cache en memoria; las operaciones sincronas se ejecutan en
+un thread mediante `asyncio.to_thread()` para no bloquear FastAPI.
 
 RRHH puede bloquear una identidad del directorio por su OID estable. El callback OAuth y
 `current_user` consultan la tabla local de bloqueos, por lo que no se crea una nueva sesion y las
 sesiones existentes dejan de acceder sin depender de Graph. El bloqueo conserva usuarios,
 historial y solicitudes pendientes.
+
+### Enrutamiento de produccion
+
+La API se publica en `https://tickets.ainia.com/backend`, pero FastAPI mantiene rutas internas sin
+ese prefijo. Dokploy aplica `Strip Path` para las peticiones del navegador. Durante SSR, Nitro
+aplica la regla `/backend/** -> http://api:8000/**`, usando directamente la red Docker.
+
+```text
+Navegador  /backend/auth/me -> Traefik -> api:8000/auth/me
+Nuxt SSR   /backend/auth/me -> Nitro   -> api:8000/auth/me
+```
+
+Este reparto evita que Nuxt consulte su propio dominio publico desde el contenedor. El recorrido
+anterior por DNS, HTTPS y Traefik retrasaba la primera respuesta autenticada y elevaba TTFB y LCP.
+
+Variables productivas:
+
+```dotenv
+NUXT_PUBLIC_API_BASE=/backend
+MICROSOFT_REDIRECT_URI=https://tickets.ainia.com/backend/auth/microsoft/callback
+AUTH_SUCCESS_REDIRECT_URL=https://tickets.ainia.com
+AUTH_COOKIE_SECURE=true
+CORS_ORIGINS=https://tickets.ainia.com
+```
 
 ```mermaid
 flowchart TD
@@ -116,7 +154,9 @@ flowchart TD
     Decode -->|Invalido| Unauthorized
     Decode --> User[Buscar usuario actual]
     User -->|No existe| Unauthorized
-    User --> Role{Endpoint de aprobador?}
+    User --> Blocked{Identidad bloqueada?}
+    Blocked -->|Si| Unauthorized
+    Blocked -->|No| Role{Endpoint de aprobador?}
     Role -->|No| Endpoint[Ejecutar endpoint]
     Role -->|Si y role=approver| Endpoint
     Role -->|Si y otro rol| Forbidden[403]
@@ -302,7 +342,7 @@ flowchart TD
 - El precio `5.50` es un respaldo temporal hasta implementar administracion.
 - `rejected` existe en el modelo, pero no hay transicion implementada.
 - JsBarcode se descarga de un CDN al abrir el documento.
-- El CORS actual solo contempla el entorno local.
+- CORS debe mantenerse restringido al origen publico cuando frontend y API se separen por origen.
 
 ## Extension segura
 

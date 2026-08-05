@@ -1,63 +1,61 @@
 x-backend-environment: &backend-environment
-  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-tickets}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-tickets}
+  DATABASE_URL: ${DATABASE_URL}
+
   MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID}
   MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
   MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
-  MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-http://localhost:8000/auth/microsoft/callback}
+  MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI}
+
   AUTH_COOKIE_SECRET: ${AUTH_COOKIE_SECRET}
-  AUTH_SUCCESS_REDIRECT_URL: ${AUTH_SUCCESS_REDIRECT_URL:-http://localhost:3000}
-  AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
-  CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+  AUTH_SUCCESS_REDIRECT_URL: ${AUTH_SUCCESS_REDIRECT_URL}
+  AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+
+  CORS_ORIGINS: ${CORS_ORIGINS}
+
   SMTP_HOST: ${SMTP_HOST}
   SMTP_PORT: ${SMTP_PORT:-25}
   SMTP_FROM: ${SMTP_FROM}
 
 services:
-  database:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-tickets}
-      POSTGRES_USER: ${POSTGRES_USER:-tickets}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   migrate:
-    build: ./backend
+    build:
+      context: ./backend
+
     environment: *backend-environment
-    command: ["alembic", "upgrade", "head"]
-    depends_on:
-      database:
-        condition: service_healthy
+
+    command:
+      - alembic
+      - upgrade
+      - head
+
     restart: "no"
 
   api:
-    build: ./backend
+    build:
+      context: ./backend
+
     restart: unless-stopped
+
     environment: *backend-environment
+
     ports:
       - "${API_PORT:-8000}:8000"
+
     depends_on:
-      database:
-        condition: service_healthy
       migrate:
         condition: service_completed_successfully
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+
     restart: unless-stopped
+
     environment:
-      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8000}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
+
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
+
     depends_on:
       - api
-
-volumes:
-  postgres_data:

@@ -26,7 +26,7 @@ class IssuedTicketModel(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     ticket_request_id: Mapped[UUID] = mapped_column(ForeignKey("ticket_requests.id"), index=True)
     codigo: Mapped[str] = mapped_column(String(11), unique=True)
-    fecha_emision: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    fecha_emision: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     precio_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
 

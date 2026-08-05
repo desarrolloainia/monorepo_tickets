@@ -24,6 +24,7 @@ from shared.uow import UnitOfWork
 class Users:
     def __init__(self) -> None:
         self.user: User | None = None
+        self.blocked = False
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         return self.user if self.user and self.user.id == user_id else None
@@ -36,6 +37,9 @@ class Users:
 
     async def update(self, user: User) -> None:
         self.user = user
+
+    async def is_blocked(self, _microsoft_oid: str) -> bool:
+        return self.blocked
 
 
 class FakeUow:
@@ -118,6 +122,18 @@ def test_callback_creates_then_updates_user_and_session(app: FastAPI) -> None:
     assert uow.commits == 2
 
 
+def test_callback_rejects_blocked_user_without_creating_session(app: FastAPI) -> None:
+    uow = FakeUow()
+    uow.users.blocked = True
+
+    response = callback(configure(app, Provider(), uow))
+
+    assert response.status_code == status.HTTP_302_FOUND
+    assert response.headers["location"].endswith("/login?error=blocked")
+    assert not response.cookies.get(ACCESS_TOKEN_COOKIE)
+    assert uow.users.user is None
+
+
 @pytest.mark.parametrize(
     "path,expected",
     [
@@ -172,6 +188,10 @@ def test_me_accepts_only_valid_cookie_and_existing_user(app: FastAPI) -> None:
     response = client.get("/auth/me")
     assert response.status_code == 200
     assert response.json()["role"] == "user"
+
+    uow.users.blocked = True
+    assert client.get("/auth/me").status_code == 401
+    uow.users.blocked = False
 
     uow.users.user = None
     assert client.get("/auth/me").status_code == 401

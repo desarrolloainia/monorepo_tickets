@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
-from decimal import Decimal
 from uuid import UUID
 
 from modules.tickets.application.generate_ticket_code import GenerateTicketCode
 from modules.tickets.domain.entities.ticket import TicketRequest, TicketRequestStatus
+from modules.tickets.domain.entities.ticket_price import DEFAULT_TICKET_PRICE
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 from shared.uow import UnitOfWork
 
@@ -19,10 +19,9 @@ class ApproveTicketRequest:
         if request.status != TicketRequestStatus.PENDING:
             raise ValueError("La solicitud ya ha sido aprobada")
 
-        # ponytail: temporary backend default; replace it when price administration exists.
         price = await self.uow.ticket_requests.current_price()
         if price is None:
-            price = Decimal("5.50")
+            price = DEFAULT_TICKET_PRICE
         issued_at = datetime.now(UTC)
         generator = GenerateTicketCode(self.uow.ticket_codes)
         tickets = [

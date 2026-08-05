@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID, uuid4
 
@@ -28,3 +29,20 @@ class PendingTicketRequest:
     requester_name: str
     cantidad: int
     fecha_creacion: datetime
+
+
+@dataclass(frozen=True)
+class UserSpending:
+    user_id: UUID
+    nombre: str
+    email: str
+    total_gastado: Decimal
+    tickets_emitidos: int
+
+
+@dataclass(frozen=True)
+class SpendingRequest:
+    id: UUID
+    fecha_emision: datetime
+    tickets_emitidos: int
+    total_gastado: Decimal

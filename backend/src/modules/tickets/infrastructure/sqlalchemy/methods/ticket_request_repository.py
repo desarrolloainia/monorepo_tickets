@@ -1,16 +1,20 @@
 from collections.abc import Sequence
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.tickets.domain.entities.ticket import (
     PendingTicketRequest,
+    SpendingRequest,
     TicketRequest,
     TicketRequestStatus,
+    UserSpending,
 )
+from modules.tickets.domain.entities.ticket_price import TicketPriceConfiguration
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 from modules.tickets.infrastructure.sqlalchemy.persistence.models import (
     IssuedTicketModel,
@@ -77,11 +81,74 @@ class SQLAlchemyTicketRequestRepository:
         await self.session.flush()
 
     async def current_price(self) -> Decimal | None:
-        return await self.session.scalar(
-            select(TicketPriceConfigurationModel.precio_unitario).order_by(
-                desc(TicketPriceConfigurationModel.updated_at)
+        configuration = await self.current_price_configuration()
+        return None if configuration is None else configuration.precio_unitario
+
+    async def current_price_configuration(
+        self, *, for_update: bool = False
+    ) -> TicketPriceConfiguration | None:
+        if for_update:
+            # Serializes price changes even before the first configuration exists.
+            await self.session.execute(select(func.pg_advisory_xact_lock(7_411_401)))
+        query = (
+            select(TicketPriceConfigurationModel, UserModel.name)
+            .join(UserModel, TicketPriceConfigurationModel.updated_by_id == UserModel.id)
+            .order_by(
+                desc(TicketPriceConfigurationModel.updated_at),
+                desc(TicketPriceConfigurationModel.id),
+            )
+            .limit(1)
+        )
+        if for_update:
+            query = query.with_for_update(of=TicketPriceConfigurationModel)
+        row = (await self.session.execute(query)).first()
+        if row is None:
+            return None
+        model, updated_by_name = row
+        return TicketPriceConfiguration(
+            id=model.id,
+            precio_unitario=model.precio_unitario,
+            updated_by_id=model.updated_by_id,
+            updated_at=model.updated_at,
+            updated_by_name=updated_by_name,
+        )
+
+    async def list_price_configurations(
+        self, limit: int = 10
+    ) -> list[TicketPriceConfiguration]:
+        rows = await self.session.execute(
+            select(TicketPriceConfigurationModel, UserModel.name)
+            .join(UserModel, TicketPriceConfigurationModel.updated_by_id == UserModel.id)
+            .order_by(
+                desc(TicketPriceConfigurationModel.updated_at),
+                desc(TicketPriceConfigurationModel.id),
+            )
+            .limit(limit)
+        )
+        return [
+            TicketPriceConfiguration(
+                id=model.id,
+                precio_unitario=model.precio_unitario,
+                updated_by_id=model.updated_by_id,
+                updated_at=model.updated_at,
+                updated_by_name=updated_by_name,
+            )
+            for model, updated_by_name in rows
+        ]
+
+    async def add_price_configuration(
+        self, configuration: TicketPriceConfiguration
+    ) -> TicketPriceConfiguration:
+        self.session.add(
+            TicketPriceConfigurationModel(
+                id=configuration.id,
+                precio_unitario=configuration.precio_unitario,
+                updated_by_id=configuration.updated_by_id,
+                updated_at=configuration.updated_at,
             )
         )
+        await self.session.flush()
+        return configuration
 
     async def reserve_next_ticket_sequence(self, period: str) -> int:
         statement = (
@@ -135,3 +202,60 @@ class SQLAlchemyTicketRequestRepository:
             .order_by(TicketRequestModel.fecha_creacion)
         )
         return [PendingTicketRequest(*row) for row in rows]
+
+    async def spending_by_user(self, start: datetime, end: datetime) -> list[UserSpending]:
+        spending = (
+            select(
+                TicketRequestModel.created_by_id.label("user_id"),
+                func.sum(IssuedTicketModel.precio_unitario).label("total_gastado"),
+                func.count(IssuedTicketModel.id).label("tickets_emitidos"),
+            )
+            .join(
+                IssuedTicketModel,
+                IssuedTicketModel.ticket_request_id == TicketRequestModel.id,
+            )
+            .where(
+                TicketRequestModel.status == TicketRequestStatus.APPROVED,
+                IssuedTicketModel.fecha_emision >= start,
+                IssuedTicketModel.fecha_emision < end,
+            )
+            .group_by(TicketRequestModel.created_by_id)
+            .subquery()
+        )
+        rows = await self.session.execute(
+            select(
+                UserModel.id,
+                UserModel.name,
+                UserModel.email,
+                func.coalesce(spending.c.total_gastado, Decimal("0.00")),
+                func.coalesce(spending.c.tickets_emitidos, 0),
+            )
+            .outerjoin(spending, spending.c.user_id == UserModel.id)
+            .order_by(UserModel.name, UserModel.id)
+        )
+        return [UserSpending(*row) for row in rows]
+
+    async def spending_requests(
+        self, user_id: UUID, start: datetime, end: datetime
+    ) -> list[SpendingRequest]:
+        rows = await self.session.execute(
+            select(
+                TicketRequestModel.id,
+                func.min(IssuedTicketModel.fecha_emision),
+                func.count(IssuedTicketModel.id),
+                func.sum(IssuedTicketModel.precio_unitario),
+            )
+            .join(
+                IssuedTicketModel,
+                IssuedTicketModel.ticket_request_id == TicketRequestModel.id,
+            )
+            .where(
+                TicketRequestModel.created_by_id == user_id,
+                TicketRequestModel.status == TicketRequestStatus.APPROVED,
+                IssuedTicketModel.fecha_emision >= start,
+                IssuedTicketModel.fecha_emision < end,
+            )
+            .group_by(TicketRequestModel.id)
+            .order_by(desc(func.min(IssuedTicketModel.fecha_emision)), TicketRequestModel.id)
+        )
+        return [SpendingRequest(*row) for row in rows]

@@ -32,4 +32,6 @@ async def current_user(
     user = await unit_of_work.users.get_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    if await unit_of_work.users.is_blocked(user.microsoft_oid):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     return user

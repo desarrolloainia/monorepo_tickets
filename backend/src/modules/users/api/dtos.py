@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import ClassVar
 from uuid import UUID
 
@@ -17,3 +18,19 @@ class UserDTO(BaseModel):
 
 class UserRoleUpdateDTO(BaseModel):
     role: UserRole
+
+
+class MicrosoftUserDTO(BaseModel):
+    microsoft_oid: str
+    email: str | None
+    name: str
+    blocked: bool
+
+
+class BlockedUserDTO(BaseModel):
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+
+    microsoft_oid: str
+    email: str | None
+    name: str
+    blocked_at: datetime

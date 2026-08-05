@@ -71,6 +71,14 @@ async def microsoft_callback(
     try:
         claims = await asyncio.to_thread(provider.exchange_code, code)
         microsoft_oid, email, name = _identity_from_claims(claims)
+        if await unit_of_work.users.is_blocked(microsoft_oid):
+            response = RedirectResponse(
+                f"{auth_settings.success_redirect_url.rstrip('/')}/login?error=blocked",
+                status_code=status.HTTP_302_FOUND,
+            )
+            response.delete_cookie(ACCESS_TOKEN_COOKIE)
+            response.delete_cookie(OAUTH_STATE_COOKIE)
+            return response
         user = await SyncMicrosoftUser(unit_of_work).sync(microsoft_oid, email, name)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED) from exc
@@ -90,7 +98,7 @@ async def microsoft_callback(
 
 
 def _identity_from_claims(claims: dict[str, Any]) -> tuple[str, str, str]:
-    microsoft_oid = claims.get("oid") or claims.get("sub")
+    microsoft_oid = claims.get("oid")
     email = claims.get("email") or claims.get("upn") or claims.get("preferred_username")
     if not microsoft_oid or not email:
         raise ValueError("Identidad Microsoft incompleta")

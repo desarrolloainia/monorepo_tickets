@@ -133,6 +133,19 @@ async def test_approve_uses_temporary_backend_price_when_database_has_none() -> 
     assert uow.ticket_requests.issued[0].precio_unitario == Decimal("5.50")
 
 
+async def test_approve_uses_the_current_configured_price() -> None:
+    creator_id = uuid4()
+    ticket_request = TicketRequest(1, creator_id, datetime.now(UTC))
+    uow = TicketsUnitOfWork(
+        ticket_request, User("oid", "user@example.com", "User", id=creator_id)
+    )
+    uow.ticket_requests.price = Decimal("6.25")
+
+    await ApproveTicketRequest(as_uow(uow)).approve(ticket_request.id, uuid4())
+
+    assert uow.ticket_requests.issued[0].precio_unitario == Decimal("6.25")
+
+
 @pytest.mark.parametrize("status", [TicketRequestStatus.APPROVED, TicketRequestStatus.REJECTED])
 async def test_approve_rejects_non_pending_requests(status: TicketRequestStatus) -> None:
     ticket_request = TicketRequest(1, uuid4(), datetime.now(UTC), status=status)

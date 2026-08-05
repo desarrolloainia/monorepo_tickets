@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, exists, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.users.domain.entities.users import User, UserRole
-from modules.users.infrastructure.sqlalchemy.persistence.models import UserModel
+from modules.users.domain.entities.users import BlockedUser, User, UserRole
+from modules.users.infrastructure.sqlalchemy.persistence.models import BlockedUserModel, UserModel
 
 
 class SQLAlchemyUserRepository:
@@ -63,3 +64,42 @@ class SQLAlchemyUserRepository:
 
     async def delete(self, user_id: UUID) -> None:
         _ = await self.session.execute(delete(UserModel).where(UserModel.id == user_id))
+
+    async def is_blocked(self, microsoft_oid: str) -> bool:
+        return bool(
+            await self.session.scalar(
+                select(exists().where(BlockedUserModel.microsoft_oid == microsoft_oid))
+            )
+        )
+
+    async def list_blocked(self) -> list[BlockedUser]:
+        models = await self.session.scalars(
+            select(BlockedUserModel).order_by(BlockedUserModel.name, BlockedUserModel.microsoft_oid)
+        )
+        return [
+            BlockedUser(model.microsoft_oid, model.email, model.name, model.blocked_at)
+            for model in models
+        ]
+
+    async def upsert_blocked(self, user: BlockedUser) -> None:
+        statement = insert(BlockedUserModel).values(
+            microsoft_oid=user.microsoft_oid,
+            email=user.email,
+            name=user.name,
+            blocked_at=user.blocked_at,
+        )
+        await self.session.execute(
+            statement.on_conflict_do_update(
+                index_elements=[BlockedUserModel.microsoft_oid],
+                set_={
+                    "email": user.email,
+                    "name": user.name,
+                    "blocked_at": user.blocked_at,
+                },
+            )
+        )
+
+    async def delete_blocked(self, microsoft_oid: str) -> None:
+        await self.session.execute(
+            delete(BlockedUserModel).where(BlockedUserModel.microsoft_oid == microsoft_oid)
+        )

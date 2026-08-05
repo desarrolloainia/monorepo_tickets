@@ -1,7 +1,7 @@
 from typing import Protocol
 from uuid import UUID
 
-from modules.users.domain.entities.users import User
+from modules.users.domain.entities.users import BlockedUser, User
 
 
 class UserRepository(Protocol):
@@ -18,3 +18,11 @@ class UserRepository(Protocol):
     async def update(self, user: User) -> None: ...
 
     async def delete(self, user_id: UUID) -> None: ...
+
+    async def is_blocked(self, microsoft_oid: str) -> bool: ...
+
+    async def list_blocked(self) -> list[BlockedUser]: ...
+
+    async def upsert_blocked(self, user: BlockedUser) -> None: ...
+
+    async def delete_blocked(self, microsoft_oid: str) -> None: ...

@@ -10,6 +10,11 @@ export default defineNuxtConfig({
       apiBase: 'http://localhost:8000'
     }
   },
+  routeRules: {
+    '/backend/**': {
+      proxy: 'http://api:8000/**'
+    }
+  },
   dir: {
     pages: 'app/routes',
     layouts: 'app/layouts',

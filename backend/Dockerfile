@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.10.2@sha256:94a23af2d50e97b87b522d3cea24aaf8a1faedec1344c952767434f69585cbf9 /uv /uvx /bin/
+COPY --from=docker.io/astral/uv:0.10.2 /uv /uvx /bin/
 WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 

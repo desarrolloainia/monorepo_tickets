@@ -60,7 +60,7 @@ function formatDate(value: string) {
 }
 
 function previewUrl(id: string) {
-  return new URL(`/tickets/${id}/print`, props.printBaseUrl).href
+  return `${props.printBaseUrl}/tickets/${id}/print`
 }
 
 function openPreview(id: string) {

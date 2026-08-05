@@ -23,7 +23,7 @@ export function useAuth() {
   }
 
   function login() {
-    window.location.assign(new URL('/auth/microsoft/login', config.public.apiBase).href)
+    window.location.assign(`${config.public.apiBase}/auth/microsoft/login`)
   }
 
   async function logout() {

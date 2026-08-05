@@ -48,7 +48,7 @@ export function usePendingTicketRequests() {
     try {
       await approveTicketRequest(config.public.apiBase, id)
       requests.value = requests.value.filter(request => request.id !== id)
-      printWindow.location.href = new URL(`/tickets/${id}/print`, config.public.apiBase).toString()
+      printWindow.location.href = `${config.public.apiBase}/tickets/${id}/print`
       toast.add({
         title: 'Solicitud aprobada',
         description: 'Elige la impresora en la pestaña que acaba de abrirse.',

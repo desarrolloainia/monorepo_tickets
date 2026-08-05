@@ -14,7 +14,7 @@ defineEmits<{
   retry: []
 }>()
 
-const itemsPerPage = 8
+const itemsPerPage = shallowRef(5)
 const page = shallowRef(1)
 const previewOpen = shallowRef(false)
 const selectedPreviewUrl = shallowRef<string>()
@@ -33,16 +33,20 @@ const statusLabels: Record<TicketRequestStatus, string> = {
 }
 
 const paginatedRequests = computed(() => {
-  const start = (page.value - 1) * itemsPerPage
-  return props.requests.slice(start, start + itemsPerPage)
+  const start = (page.value - 1) * itemsPerPage.value
+  return props.requests.slice(start, start + itemsPerPage.value)
 })
 
-const rangeStart = computed(() => props.requests.length === 0 ? 0 : (page.value - 1) * itemsPerPage + 1)
-const rangeEnd = computed(() => Math.min(page.value * itemsPerPage, props.requests.length))
+const rangeStart = computed(() => props.requests.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1)
+const rangeEnd = computed(() => Math.min(page.value * itemsPerPage.value, props.requests.length))
 
 watch(() => props.requests.length, (length) => {
-  const lastPage = Math.max(1, Math.ceil(length / itemsPerPage))
+  const lastPage = Math.max(1, Math.ceil(length / itemsPerPage.value))
   if (page.value > lastPage) page.value = lastPage
+})
+
+watch(itemsPerPage, () => {
+  page.value = 1
 })
 
 watch(previewOpen, (open) => {
@@ -111,22 +115,14 @@ function openPreview(id: string) {
         </div>
 
         <div class="request-status">
-          <span
-            class="status-pill"
-            :class="`status-pill--${request.status}`"
-          >
+          <span class="status-pill" :class="`status-pill--${request.status}`">
             <span class="status-dot" aria-hidden="true" />
             {{ statusLabels[request.status] }}
           </span>
         </div>
 
         <div class="request-action">
-          <button
-            v-if="request.status === 'approved'"
-            type="button"
-            class="view-link"
-            @click="openPreview(request.id)"
-          >
+          <button v-if="request.status === 'approved'" type="button" class="view-link" @click="openPreview(request.id)">
             Previsualizar tickets
             <UIcon name="i-lucide-eye" class="view-icon" aria-hidden="true" />
           </button>
@@ -137,40 +133,31 @@ function openPreview(id: string) {
 
     <footer v-if="requests.length > 0" class="history-footer">
       <p>{{ rangeStart }}–{{ rangeEnd }} de {{ requests.length }} solicitudes</p>
-      <UPagination
-        v-model:page="page"
-        :items-per-page="itemsPerPage"
-        :total="requests.length"
-        :sibling-count="1"
-        color="neutral"
-        active-color="success"
-        variant="ghost"
-        size="sm"
-      />
+      <div class="pagination-controls">
+        <label class="page-size">
+          <span>Mostrar</span>
+          <select v-model.number="itemsPerPage" aria-label="Solicitudes por página">
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+          </select>
+          <span>por página</span>
+        </label>
+        <UPagination v-model:page="page" :items-per-page="itemsPerPage" :total="requests.length" :sibling-count="1"
+          color="success" active-color="success" variant="ghost" size="sm" />
+      </div>
     </footer>
   </section>
 
-  <UModal
-    v-model:open="previewOpen"
-    fullscreen
-    title="Previsualización de tickets"
-    description="Documento A4 de solo lectura"
-    :ui="{ body: 'p-0 sm:p-0 overflow-hidden' }"
-  >
+  <UModal v-model:open="previewOpen" fullscreen title="Previsualización de tickets"
+    description="Documento A4 de solo lectura" :ui="{ body: 'p-0 sm:p-0 overflow-hidden' }">
     <template #body>
       <div class="preview-viewer">
         <div v-if="previewLoading" class="preview-loading" aria-live="polite">
           <UIcon name="i-lucide-loader-circle" class="preview-spinner" aria-hidden="true" />
           <span>Preparando documento…</span>
         </div>
-        <iframe
-          v-if="selectedPreviewUrl"
-          class="preview-frame"
-          :class="{ 'preview-frame--loading': previewLoading }"
-          :src="selectedPreviewUrl"
-          title="Documento A4 con los tickets aprobados"
-          @load="previewLoading = false"
-        />
+        <iframe v-if="selectedPreviewUrl" class="preview-frame" :class="{ 'preview-frame--loading': previewLoading }"
+          :src="selectedPreviewUrl" title="Documento A4 con los tickets aprobados" @load="previewLoading = false" />
       </div>
     </template>
   </UModal>
@@ -295,6 +282,37 @@ function openPreview(id: string) {
 .history-footer p {
   margin: 0;
   white-space: nowrap;
+}
+
+.pagination-controls,
+.page-size {
+  display: flex;
+  align-items: center;
+}
+
+.pagination-controls {
+  gap: 1rem;
+}
+
+.page-size {
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.page-size select {
+  height: 2rem;
+  padding: 0 1.6rem 0 0.6rem;
+  border: 1px solid var(--tickets-line);
+  border-radius: 0.55rem;
+  background: var(--tickets-paper);
+  color: var(--tickets-ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.page-size select:focus-visible {
+  outline: 3px solid rgb(45 102 84 / 28%);
+  outline-offset: 2px;
 }
 
 .request-row {
@@ -485,6 +503,12 @@ function openPreview(id: string) {
     align-items: flex-start;
     flex-direction: column;
     padding-inline: 1.25rem;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

@@ -2,8 +2,9 @@ import { computed, shallowRef } from 'vue'
 
 import { approveTicketRequest, fetchPendingTicketRequests } from '../api/tickets'
 
-export async function usePendingTicketRequests() {
+export function usePendingTicketRequests() {
   const config = useRuntimeConfig()
+  const router = useRouter()
   const requestHeaders = useRequestHeaders(['cookie'])
   const toast = useToast()
   const approvingIds = shallowRef(new Set<string>())
@@ -13,7 +14,7 @@ export async function usePendingTicketRequests() {
     error: loadError,
     refresh,
     status
-  } = await useAsyncData(
+  } = useAsyncData(
     'pending-ticket-requests',
     () => fetchPendingTicketRequests({
       baseURL: config.public.apiBase,
@@ -60,7 +61,7 @@ export async function usePendingTicketRequests() {
       const statusCode = error.statusCode
 
       if (statusCode === 401) {
-        await navigateTo('/login')
+        await router.push('/login')
         return
       }
 

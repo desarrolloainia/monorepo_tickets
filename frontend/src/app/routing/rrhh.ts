@@ -3,5 +3,5 @@ import { useAuth } from '@/shared/auth'
 export default defineNuxtRouteMiddleware(() => {
   const { user } = useAuth()
 
-  if (!['user', 'rrhh', 'accountant'].includes(user.value?.role ?? '')) return navigateTo('/')
+  if (user.value?.role !== 'rrhh') return navigateTo('/')
 })

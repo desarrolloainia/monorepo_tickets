@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.git
+.idea
+.nuxt
+.output
+.data
+.nitro
+.cache
+node_modules
+*.log
+README.md
+skills-lock.json

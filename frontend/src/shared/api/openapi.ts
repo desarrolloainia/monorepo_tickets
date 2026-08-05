@@ -72,6 +72,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/microsoft/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Microsoft Users */
+        get: operations["search_microsoft_users_users_microsoft_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/blocked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Blocked Users */
+        get: operations["list_blocked_users_users_blocked_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/blocked/{microsoft_oid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Block User */
+        put: operations["block_user_users_blocked__microsoft_oid__put"];
+        post?: never;
+        /** Unblock User */
+        delete: operations["unblock_user_users_blocked__microsoft_oid__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{user_id}/role": {
         parameters: {
             query?: never;
@@ -135,6 +187,58 @@ export interface paths {
         get: operations["list_pending_ticket_requests_tickets_pending_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/spending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Spending */
+        get: operations["get_spending_tickets_spending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/spending/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Spending */
+        get: operations["get_user_spending_tickets_spending_users__user_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/price-configurations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ticket Price Configurations */
+        get: operations["get_ticket_price_configurations_tickets_price_configurations_get"];
+        put?: never;
+        /** Set Ticket Price */
+        post: operations["set_ticket_price_tickets_price_configurations_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -213,10 +317,35 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BlockedUserDTO */
+        BlockedUserDTO: {
+            /** Microsoft Oid */
+            microsoft_oid: string;
+            /** Email */
+            email: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Blocked At
+             * Format: date-time
+             */
+            blocked_at: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** MicrosoftUserDTO */
+        MicrosoftUserDTO: {
+            /** Microsoft Oid */
+            microsoft_oid: string;
+            /** Email */
+            email: string | null;
+            /** Name */
+            name: string;
+            /** Blocked */
+            blocked: boolean;
         };
         /** PendingTicketRequestDTO */
         PendingTicketRequestDTO: {
@@ -234,6 +363,74 @@ export interface components {
              * Format: date-time
              */
             fecha_creacion: string;
+        };
+        /** SpendingRequestDTO */
+        SpendingRequestDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Fecha Emision
+             * Format: date-time
+             */
+            fecha_emision: string;
+            /** Tickets Emitidos */
+            tickets_emitidos: number;
+            /** Total Gastado */
+            total_gastado: string;
+        };
+        /** SpendingSummaryDTO */
+        SpendingSummaryDTO: {
+            /** Period */
+            period: string;
+            /** Total Gastado */
+            total_gastado: string;
+            /** Tickets Emitidos */
+            tickets_emitidos: number;
+            /** Gasto Medio Por Usuario */
+            gasto_medio_por_usuario: string;
+            /** Usuarios */
+            usuarios: components["schemas"]["UserSpendingDTO"][];
+        };
+        /** TicketPriceConfigurationDTO */
+        TicketPriceConfigurationDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Precio Unitario */
+            precio_unitario: string;
+            /**
+             * Updated By Id
+             * Format: uuid
+             */
+            updated_by_id: string;
+            /** Updated By Name */
+            updated_by_name: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** TicketPriceOverviewDTO */
+        TicketPriceOverviewDTO: {
+            /** Precio Unitario */
+            precio_unitario: string;
+            /** Current Configuration Id */
+            current_configuration_id: string | null;
+            /** Historial */
+            historial: components["schemas"]["TicketPriceConfigurationDTO"][];
+        };
+        /** TicketPriceUpdateDTO */
+        TicketPriceUpdateDTO: {
+            /** Precio Unitario */
+            precio_unitario: number | string;
+            /** Expected Configuration Id */
+            expected_configuration_id?: string | null;
         };
         /** TicketRequestCreateDTO */
         TicketRequestCreateDTO: {
@@ -290,10 +487,46 @@ export interface components {
          * UserRole
          * @enum {string}
          */
-        UserRole: "user" | "approver";
+        UserRole: "user" | "approver" | "rrhh" | "accountant";
         /** UserRoleUpdateDTO */
         UserRoleUpdateDTO: {
             role: components["schemas"]["UserRole"];
+        };
+        /** UserSpendingDTO */
+        UserSpendingDTO: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Email */
+            email: string;
+            /** Total Gastado */
+            total_gastado: string;
+            /** Tickets Emitidos */
+            tickets_emitidos: number;
+        };
+        /** UserSpendingDetailDTO */
+        UserSpendingDetailDTO: {
+            /** Period */
+            period: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Email */
+            email: string;
+            /** Total Gastado */
+            total_gastado: string;
+            /** Tickets Emitidos */
+            tickets_emitidos: number;
+            /** Solicitudes */
+            solicitudes: components["schemas"]["SpendingRequestDTO"][];
         };
         /** ValidationError */
         ValidationError: {
@@ -405,6 +638,117 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    search_microsoft_users_users_microsoft_search_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicrosoftUserDTO"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_blocked_users_users_blocked_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockedUserDTO"][];
+                };
+            };
+        };
+    };
+    block_user_users_blocked__microsoft_oid__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                microsoft_oid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockedUserDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unblock_user_users_blocked__microsoft_oid__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                microsoft_oid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -541,6 +885,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PendingTicketRequestDTO"][];
+                };
+            };
+        };
+    };
+    get_spending_tickets_spending_get: {
+        parameters: {
+            query?: {
+                period?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpendingSummaryDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_spending_tickets_spending_users__user_id__get: {
+        parameters: {
+            query?: {
+                period?: string | null;
+            };
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSpendingDetailDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ticket_price_configurations_tickets_price_configurations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPriceOverviewDTO"];
+                };
+            };
+        };
+    };
+    set_ticket_price_tickets_price_configurations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketPriceUpdateDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPriceConfigurationDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

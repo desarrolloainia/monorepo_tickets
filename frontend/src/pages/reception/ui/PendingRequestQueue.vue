@@ -112,14 +112,9 @@ function confirmApproval() {
               <td><time :datetime="request.fecha_creacion">{{ formatDate(request.fecha_creacion) }}</time></td>
               <td><strong class="ticket-amount">{{ request.cantidad }}</strong> tickets</td>
               <td class="action-cell">
-                <UButton
-                  color="success"
-                  variant="soft"
-                  icon="i-lucide-printer"
-                  :loading="approvingIds.has(request.id)"
+                <UButton color="success" variant="soft" icon="i-lucide-printer" :loading="approvingIds.has(request.id)"
                   :aria-label="`Aprobar e imprimir solicitud de ${request.requester_name}`"
-                  @click="openPrintModal(request)"
-                >
+                  @click="openPrintModal(request)">
                   Aprobar e imprimir
                 </UButton>
               </td>
@@ -147,14 +142,8 @@ function confirmApproval() {
               <dd><strong class="ticket-amount">{{ request.cantidad }}</strong> tickets</dd>
             </div>
           </dl>
-          <UButton
-            block
-            color="success"
-            variant="soft"
-            icon="i-lucide-printer"
-            :loading="approvingIds.has(request.id)"
-            @click="openPrintModal(request)"
-          >
+          <UButton block color="success" variant="soft" icon="i-lucide-printer" :loading="approvingIds.has(request.id)"
+            @click="openPrintModal(request)">
             Aprobar e imprimir
           </UButton>
         </li>
@@ -162,26 +151,14 @@ function confirmApproval() {
 
       <footer class="queue-footer">
         <p>{{ rangeStart }}–{{ rangeEnd }} de {{ requests.length }} solicitudes</p>
-        <UPagination
-          v-model:page="page"
-          :items-per-page="itemsPerPage"
-          :total="requests.length"
-          :sibling-count="1"
-          color="neutral"
-          active-color="success"
-          variant="ghost"
-          size="sm"
-        />
+        <UPagination v-model:page="page" :items-per-page="itemsPerPage" :total="requests.length" :sibling-count="1"
+          color="info" active-color="success" variant="ghost" size="sm" />
       </footer>
     </template>
   </section>
 
-  <UModal
-    v-model:open="printModalOpen"
-    title="Aprobar e imprimir"
-    description="Chrome te pedirá que elijas una impresora antes de imprimir."
-    :ui="{ content: 'sm:max-w-lg' }"
-  >
+  <UModal v-model:open="printModalOpen" title="Aprobar e imprimir"
+    description="Chrome te pedirá que elijas una impresora antes de imprimir." :ui="{ content: 'sm:max-w-lg' }">
     <template #body>
       <div v-if="selectedRequest" class="grid gap-4">
         <div class="rounded-xl border border-(--tickets-line) bg-(--tickets-paper) p-4">
@@ -204,12 +181,7 @@ function confirmApproval() {
     <template #footer>
       <div class="flex w-full justify-end gap-2">
         <UButton color="neutral" variant="ghost" label="Cancelar" @click="printModalOpen = false" />
-        <UButton
-          color="success"
-          icon="i-lucide-printer"
-          label="Aprobar y elegir impresora"
-          @click="confirmApproval"
-        />
+        <UButton color="success" icon="i-lucide-printer" label="Aprobar y elegir impresora" @click="confirmApproval" />
       </div>
     </template>
   </UModal>
@@ -510,7 +482,7 @@ function confirmApproval() {
     padding: 1rem;
   }
 
-  .queue-footer > :last-child {
+  .queue-footer> :last-child {
     align-self: center;
   }
 }

@@ -10,7 +10,7 @@ const {
   loadError,
   refresh,
   sortedRequests
-} = await usePendingTicketRequests()
+} = usePendingTicketRequests()
 </script>
 
 <template>

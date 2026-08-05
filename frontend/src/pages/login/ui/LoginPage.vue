@@ -2,6 +2,7 @@
 import { useAuth } from '@/shared/auth'
 
 const { loaded, login, refresh, user } = useAuth()
+const blocked = useRoute().query.error === 'blocked'
 
 onMounted(async () => {
   await refresh()
@@ -78,6 +79,10 @@ onMounted(async () => {
             {{ loaded ? 'Continuar con Microsoft' : 'Comprobando acceso…' }}
           </span>
         </button>
+
+        <p v-if="blocked" class="access-error" role="alert">
+          Tu acceso al portal está bloqueado. Contacta con Recursos Humanos.
+        </p>
 
         <p class="access-note">
           Utiliza tu cuenta corporativa de Microsoft.
@@ -326,6 +331,17 @@ onMounted(async () => {
   color: #61708d;
   font-size: 0.8125rem;
   line-height: 1.55;
+  text-align: center;
+}
+
+.access-error {
+  margin: 1rem 0 0;
+  padding: 0.8rem;
+  border-radius: 0.625rem;
+  background: #fce8e8;
+  color: #8f2929;
+  font-size: 0.8125rem;
+  line-height: 1.5;
   text-align: center;
 }
 

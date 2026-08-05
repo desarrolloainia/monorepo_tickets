@@ -2,8 +2,9 @@ import { computed, shallowRef } from 'vue'
 
 import { createTicketRequest, fetchTicketRequests, type TicketAmount } from '../api/tickets'
 
-export async function useTicketRequests() {
+export function useTicketRequests() {
   const config = useRuntimeConfig()
+  const router = useRouter()
   const requestHeaders = useRequestHeaders(['cookie'])
   const selectedAmount = shallowRef<TicketAmount>(11)
   const isSubmitting = shallowRef(false)
@@ -15,7 +16,7 @@ export async function useTicketRequests() {
     error: loadError,
     refresh,
     status
-  } = await useAsyncData(
+  } = useAsyncData(
     'ticket-requests',
     () => fetchTicketRequests({
       baseURL: config.public.apiBase,
@@ -43,7 +44,7 @@ export async function useTicketRequests() {
       const statusCode = (cause as { statusCode?: number }).statusCode
 
       if (statusCode === 401) {
-        await navigateTo('/login')
+        await router.push('/login')
         return
       }
 

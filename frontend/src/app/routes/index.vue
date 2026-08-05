@@ -5,5 +5,12 @@ definePageMeta({ middleware: 'auth' })
 
 const { user } = useAuth()
 
-await navigateTo(user.value?.role === 'approver' ? '/recepcion' : '/user', { replace: true })
+const landingByRole = {
+  accountant: '/contabilidad',
+  approver: '/recepcion',
+  rrhh: '/gasto',
+  user: '/user'
+} as const
+
+await navigateTo(landingByRole[user.value!.role], { replace: true })
 </script>

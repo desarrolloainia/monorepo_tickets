@@ -17,7 +17,7 @@ const {
   submit,
   submitError,
   submitSuccess
-} = await useTicketRequests()
+} = useTicketRequests()
 </script>
 
 <template>

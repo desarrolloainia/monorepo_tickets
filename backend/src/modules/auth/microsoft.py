@@ -6,22 +6,22 @@ from modules.auth.config import auth_settings
 
 
 class MicrosoftOAuth:
-    def _client(self) -> msal.ConfidentialClientApplication:
-        return msal.ConfidentialClientApplication(
+    def __init__(self) -> None:
+        self.client: msal.ConfidentialClientApplication = msal.ConfidentialClientApplication(
             auth_settings.client_id,
             client_credential=auth_settings.client_secret,
             authority=auth_settings.authority,
         )
 
     def authorization_url(self, state: str) -> str:
-        return self._client().get_authorization_request_url(
+        return self.client.get_authorization_request_url(
             scopes=["email"],
             state=state,
             redirect_uri=auth_settings.redirect_uri,
         )
 
     def exchange_code(self, code: str) -> dict[str, Any]:
-        result = self._client().acquire_token_by_authorization_code(
+        result = self.client.acquire_token_by_authorization_code(
             code,
             scopes=["email"],
             redirect_uri=auth_settings.redirect_uri,

@@ -71,6 +71,7 @@ La pagina de login desactiva este layout.
 | `app/routes/login.vue` | `/login` | Ninguno | `LoginPage` |
 | `app/routes/user.vue` | `/user` | `auth`, `user` | `HomePage` |
 | `app/routes/recepcion.vue` | `/recepcion` | `auth`, `approver` | `ReceptionPage` |
+| `app/routes/bloqueos.vue` | `/bloqueos` | `auth`, `rrhh` | Gestionar accesos |
 
 ```mermaid
 flowchart TD
@@ -346,6 +347,23 @@ sequenceDiagram
         Model->>Approver: Toast de error
     end
 ```
+
+## Modulo `pages/blocked-users`
+
+Pantalla exclusiva de RRHH. Busca bajo demanda por nombre o correo en Microsoft 365, confirma
+antes de bloquear y mantiene una lista local para desbloquear. No usa autocomplete, estado global
+ni paginacion; el backend limita la busqueda a 20 resultados.
+
+```text
+pages/blocked-users/
+|-- api/blocked-users.ts
+|-- model/use-blocked-users.ts
+|-- ui/BlockedUsersPage.vue
+`-- index.ts
+```
+
+Un callback OAuth bloqueado vuelve a `/login?error=blocked`, donde se muestra el motivo sin crear
+sesion.
 
 ## Estado y datos
 

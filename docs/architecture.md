@@ -31,12 +31,14 @@ flowchart TB
 
     DB[(PostgreSQL)]
     Entra[Microsoft Entra ID]
+    Graph[Microsoft Graph]
     CDN[JsBarcode en jsDelivr]
 
     Browser --> Nuxt
     Nuxt -->|JSON y cookie HttpOnly| FastAPI
     FastAPI --> DB
     FastAPI --> Entra
+    FastAPI -->|User.Read.All| Graph
     FastAPI --> Jinja
     Jinja -->|HTML| Browser
     Browser --> CDN
@@ -100,6 +102,11 @@ sequenceDiagram
 ```
 
 El JWT solo contiene el ID del usuario. Cada peticion protegida vuelve a consultar PostgreSQL, por lo que un cambio de rol o una eliminacion se aplica inmediatamente.
+
+RRHH puede bloquear una identidad del directorio por su OID estable. El callback OAuth y
+`current_user` consultan la tabla local de bloqueos, por lo que no se crea una nueva sesion y las
+sesiones existentes dejan de acceder sin depender de Graph. El bloqueo conserva usuarios,
+historial y solicitudes pendientes.
 
 ```mermaid
 flowchart TD
@@ -248,6 +255,13 @@ erDiagram
         decimal precio_unitario
         UUID updated_by_id FK
         datetime updated_at
+    }
+
+    BLOCKED_USERS {
+        string microsoft_oid PK
+        string email
+        string name
+        datetime blocked_at
     }
 
     USERS ||--o{ TICKET_REQUESTS : creates

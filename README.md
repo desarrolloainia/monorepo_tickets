@@ -5,6 +5,7 @@ Aplicacion interna para solicitar, aprobar, previsualizar e imprimir tickets de 
 ## Funcionalidad
 
 - Inicio de sesion con Microsoft OAuth.
+- Busqueda de empleados con Microsoft Graph y bloqueo de acceso por RRHH.
 - Roles `user` y `approver`.
 - Solicitudes de 11 o 22 tickets.
 - Cola de aprobacion ordenada por antiguedad.
@@ -106,6 +107,8 @@ Notas:
 - En produccion se debe usar HTTPS y `AUTH_COOKIE_SECURE=true`.
 - El origen frontend permitido por CORS esta actualmente fijado a `http://localhost:3000` en `backend/src/main.py`.
 - Si no existe una configuracion de precio, el backend usa temporalmente `5.50` euros.
+- La aplicacion de Entra necesita el permiso de aplicacion Microsoft Graph `User.Read.All`
+  con consentimiento de administrador. Se reutilizan el tenant, client ID y secret existentes.
 
 ## Base de datos
 

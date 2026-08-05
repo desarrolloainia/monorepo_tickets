@@ -247,6 +247,24 @@ El rol existente nunca se reemplaza con datos de Microsoft.
 
 No hay endpoint para listar usuarios, aunque existe el caso de uso.
 
+### Bloqueo de acceso
+
+RRHH busca identidades directamente en Microsoft Graph mediante client credentials. La
+aplicacion de Entra requiere `User.Read.All` como permiso de aplicacion y consentimiento de
+administrador.
+
+| Metodo | Ruta | Finalidad |
+|---|---|---|
+| GET | `/users/microsoft/search?q=...` | Buscar por nombre o correo |
+| GET | `/users/blocked` | Listar identidades bloqueadas |
+| PUT | `/users/blocked/{microsoft_oid}` | Bloquear o refrescar una identidad |
+| DELETE | `/users/blocked/{microsoft_oid}` | Desbloquear una identidad |
+
+`blocked_users` no tiene clave foranea hacia `users`: permite bloquear a alguien que nunca ha
+entrado y evita que eliminar su usuario local quite el bloqueo. El OID aplica la regla; nombre y
+correo son solo una instantanea visual. `current_user` rechaza sesiones bloqueadas y el callback
+OAuth no emite una nueva cookie.
+
 ### Persistencia
 
 `UserModel` mapea `users`:

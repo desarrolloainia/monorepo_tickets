@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@nuxt/ui'],
+  app: {
+    head: {
+      link: [{ rel: 'icon', href: '/favicon.ico' }]
+    }
+  },
   srcDir: 'src',
   css: ['@/app/styles/main.css'],
   runtimeConfig: {

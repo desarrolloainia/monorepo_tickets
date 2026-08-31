@@ -143,7 +143,7 @@ function openPreview(id: string) {
           <span>por página</span>
         </label>
         <UPagination v-model:page="page" :items-per-page="itemsPerPage" :total="requests.length" :sibling-count="1"
-          color="success" active-color="success" variant="ghost" size="sm" />
+          color="primary" active-color="primary" variant="ghost" size="sm" />
       </div>
     </footer>
   </section>
@@ -167,9 +167,9 @@ function openPreview(id: string) {
 .history {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1.1rem;
-  background: var(--tickets-paper);
+  background: var(--ui-bg-elevated);
 }
 
 .history-header {
@@ -179,12 +179,12 @@ function openPreview(id: string) {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.25rem clamp(1.25rem, 3vw, 1.75rem);
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .history-eyebrow {
   margin: 0 0 0.25rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -193,7 +193,7 @@ function openPreview(id: string) {
 
 .history-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1.05rem;
   font-weight: 750;
   letter-spacing: -0.025em;
@@ -205,8 +205,8 @@ function openPreview(id: string) {
   height: 1.8rem;
   place-items: center;
   border-radius: 999px;
-  background: #ebece8;
-  color: var(--tickets-muted);
+  background: var(--ui-bg);
+  color: var(--ui-text-muted);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -222,7 +222,7 @@ function openPreview(id: string) {
   align-items: center;
   grid-template-columns: 1.4fr 0.8fr 1fr;
   gap: 1rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .loading-row:last-child {
@@ -243,12 +243,12 @@ function openPreview(id: string) {
   width: 1.5rem;
   height: 1.5rem;
   margin-bottom: 1rem;
-  color: #89919e;
+  color: var(--ui-text-muted);
 }
 
 .state-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -256,7 +256,7 @@ function openPreview(id: string) {
 .state-copy {
   max-width: 20rem;
   margin: 0.5rem 0 1.25rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.82rem;
   line-height: 1.55;
 }
@@ -274,8 +274,8 @@ function openPreview(id: string) {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.85rem 1.5rem;
-  border-top: 1px solid var(--tickets-line);
-  color: var(--tickets-muted);
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-muted);
   font-size: 0.72rem;
 }
 
@@ -302,16 +302,16 @@ function openPreview(id: string) {
 .page-size select {
   height: 2rem;
   padding: 0 1.6rem 0 0.6rem;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 0.55rem;
-  background: var(--tickets-paper);
-  color: var(--tickets-ink);
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text-highlighted);
   font: inherit;
   font-weight: 700;
 }
 
 .page-size select:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
   outline-offset: 2px;
 }
 
@@ -321,8 +321,8 @@ function openPreview(id: string) {
   align-items: center;
   grid-template-columns: 1.3fr 0.8fr 1fr auto;
   gap: 1rem;
-  border-bottom: 1px solid var(--tickets-line);
-  color: var(--tickets-muted);
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text-muted);
   font-size: 0.82rem;
 }
 
@@ -337,7 +337,7 @@ function openPreview(id: string) {
 }
 
 .request-quantity strong {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
 }
@@ -360,18 +360,18 @@ function openPreview(id: string) {
 }
 
 .status-pill--pending {
-  background: #f7edcf;
-  color: #8b6415;
+  background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
+  color: var(--ui-warning);
 }
 
 .status-pill--approved {
-  background: #dcece5;
-  color: #28634f;
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
+  color: var(--ui-success);
 }
 
 .status-pill--rejected {
-  background: #f4dfdc;
-  color: #9c4037;
+  background: color-mix(in srgb, var(--ui-error) 14%, transparent);
+  color: var(--ui-error);
 }
 
 .request-action {
@@ -385,7 +385,7 @@ function openPreview(id: string) {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--tickets-ink);
+  color: var(--ui-primary);
   cursor: pointer;
   font-size: 0.78rem;
   font-weight: 700;
@@ -396,7 +396,7 @@ function openPreview(id: string) {
   position: relative;
   height: calc(100dvh - 5.5rem);
   overflow: hidden;
-  background: #343b48;
+  background: var(--ui-bg);
 }
 
 .preview-frame {
@@ -419,7 +419,7 @@ function openPreview(id: string) {
   place-content: center;
   justify-items: center;
   gap: 0.75rem;
-  color: #fff;
+  color: var(--ui-text-highlighted);
   font-size: 0.82rem;
 }
 
@@ -442,7 +442,7 @@ function openPreview(id: string) {
 
 .view-link:focus-visible {
   border-radius: 0.2rem;
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
   outline-offset: 3px;
 }
 
@@ -453,7 +453,7 @@ function openPreview(id: string) {
 
 .action-placeholder,
 .mobile-label {
-  color: #a1a7b0;
+  color: var(--ui-text-muted);
 }
 
 .mobile-label {

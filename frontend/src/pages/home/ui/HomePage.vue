@@ -52,7 +52,7 @@ const {
 
 .page-eyebrow {
   margin: 0 0 0.85rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -61,7 +61,7 @@ const {
 
 .page-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   font-size: clamp(2.4rem, 6vw, 4.25rem);
   font-weight: 500;
@@ -73,7 +73,7 @@ const {
 .page-description {
   max-width: 34rem;
   margin: 1.25rem 0 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: clamp(0.95rem, 2vw, 1.05rem);
   line-height: 1.65;
 }

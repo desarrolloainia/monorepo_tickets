@@ -36,10 +36,10 @@
   position: relative;
   overflow: hidden;
   padding: clamp(1.4rem, 3vw, 1.8rem);
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1.1rem;
-  background: var(--tickets-paper);
-  box-shadow: 0 18px 50px rgb(20 33 61 / 5%);
+  background: var(--ui-bg-elevated);
+  box-shadow: 0 18px 50px color-mix(in srgb, black 5%, transparent);
 }
 
 .printer-card::after {
@@ -48,7 +48,7 @@
   right: -4rem;
   width: 10rem;
   height: 10rem;
-  border: 1px solid rgb(45 102 84 / 12%);
+  border: 1px solid color-mix(in srgb, var(--ui-primary) 14%, transparent);
   border-radius: 50%;
   content: "";
 }
@@ -60,8 +60,8 @@
   place-items: center;
   margin-bottom: 1.5rem;
   border-radius: 0.8rem;
-  background: var(--tickets-ink);
-  color: #fff;
+  background: var(--ui-primary);
+  color: var(--ui-text-inverted);
 }
 
 .printer-icon svg {
@@ -71,7 +71,7 @@
 
 .card-eyebrow {
   margin: 0 0 0.35rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -80,7 +80,7 @@
 
 .card-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1.3rem;
   font-weight: 750;
   letter-spacing: -0.035em;
@@ -88,7 +88,7 @@
 
 .card-description {
   margin: 0.75rem 0 1.35rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.82rem;
   line-height: 1.6;
 }
@@ -99,9 +99,9 @@
   gap: 0.7rem;
   margin-bottom: 1.25rem;
   padding: 0.85rem;
-  border: 1px solid #cbded4;
+  border: 1px solid color-mix(in srgb, var(--ui-success) 35%, var(--ui-border));
   border-radius: 0.75rem;
-  background: #edf4ef;
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
 }
 
 .connection-dot {
@@ -110,8 +110,8 @@
   flex: 0 0 auto;
   margin-top: 0.3rem;
   border-radius: 50%;
-  background: #2d8063;
-  box-shadow: 0 0 0 4px rgb(45 128 99 / 12%);
+  background: var(--ui-success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ui-success) 14%, transparent);
 }
 
 .connection-label,
@@ -121,7 +121,7 @@
 
 .connection-label {
   margin-bottom: 0.18rem;
-  color: #35705c;
+  color: var(--ui-success);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -129,7 +129,7 @@
 }
 
 .connected-printer strong {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.76rem;
   line-height: 1.35;
 }
@@ -139,7 +139,7 @@
   gap: 0.65rem;
   margin: 0;
   padding-left: 1.25rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.76rem;
   line-height: 1.5;
 }
@@ -149,7 +149,7 @@
   align-items: flex-start;
   gap: 0.4rem;
   margin: 1rem 0 0;
-  color: #858d99;
+  color: var(--ui-text-muted);
   font-size: 0.68rem;
   line-height: 1.45;
 }

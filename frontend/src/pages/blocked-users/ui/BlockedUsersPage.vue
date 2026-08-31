@@ -172,7 +172,7 @@ async function confirmBlock(user: Parameters<typeof block>[0]) {
 
 .eyebrow {
   margin: 0 0 0.55rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -190,15 +190,15 @@ h1 {
 
 .page-header > p:last-child {
   margin: 1rem 0 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   line-height: 1.6;
 }
 
 .search-card,
 .panel {
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
-  background: var(--tickets-paper);
+  background: var(--ui-bg-elevated);
 }
 
 .search-card {
@@ -215,7 +215,7 @@ h1 {
 .search-hint,
 .panel-header p {
   margin: 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.76rem;
 }
 
@@ -229,15 +229,15 @@ h1 {
   height: 2.75rem;
   flex: 1;
   padding-inline: 0.9rem;
-  border: 1px solid #cfd5d1;
+  border: 1px solid var(--ui-border);
   border-radius: 0.7rem;
-  background: #fff;
-  color: var(--tickets-ink);
+  background: var(--ui-bg);
+  color: var(--ui-text-highlighted);
   font: inherit;
 }
 
 .search-row input:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
   outline-offset: 2px;
 }
 
@@ -248,7 +248,7 @@ h1 {
 }
 
 .error-text {
-  color: #a13333;
+  color: var(--ui-error);
 }
 
 .notice {
@@ -258,14 +258,14 @@ h1 {
 }
 
 .notice-success {
-  background: #e7efe9;
-  color: #285b4b;
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
+  color: var(--ui-success);
 }
 
 .notice-error {
-  border: 1px solid #efcaca;
-  background: #fff1f1;
-  color: #8d2929;
+  border: 1px solid color-mix(in srgb, var(--ui-error) 28%, transparent);
+  background: color-mix(in srgb, var(--ui-error) 14%, transparent);
+  color: var(--ui-error);
 }
 
 .panel {
@@ -278,7 +278,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .panel-header h2 {
@@ -289,8 +289,6 @@ h1 {
 .panel-header > span,
 .blocked-label {
   border-radius: 999px;
-  background: #e7ece7;
-  color: #2d6654;
   font-size: 0.72rem;
   font-weight: 750;
 }
@@ -298,6 +296,8 @@ h1 {
 .panel-header > span {
   min-width: 1.75rem;
   padding: 0.25rem 0.5rem;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   text-align: center;
 }
 
@@ -314,7 +314,7 @@ h1 {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.9rem 1.5rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .user-list li:last-child {
@@ -344,8 +344,8 @@ h1 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #e7ece7;
-  color: #2d6654;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -360,12 +360,12 @@ h1 {
 }
 
 .user-identity > span {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.78rem;
 }
 
 .is-confirming {
-  background: #fff8f1;
+  background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
 }
 
 .confirm-actions {
@@ -375,13 +375,15 @@ h1 {
 }
 
 .confirm-actions > span {
-  color: #8d2929;
+  color: var(--ui-error);
   font-size: 0.78rem;
   font-weight: 700;
 }
 
 .blocked-label {
   padding: 0.45rem 0.7rem;
+  background: color-mix(in srgb, var(--ui-error) 12%, transparent);
+  color: var(--ui-error);
 }
 
 .loading-list {
@@ -397,7 +399,7 @@ h1 {
   align-content: center;
   gap: 0.75rem;
   padding: 2rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   text-align: center;
 }
 

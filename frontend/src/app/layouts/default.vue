@@ -49,6 +49,7 @@ const navigation = computed(() => {
           <strong>{{ user.name }}</strong>
           <span>{{ user.email }}</span>
         </span>
+        <UColorModeButton color="primary" variant="soft" aria-label="Cambiar tema de color" />
         <UButton
           color="neutral"
           variant="ghost"
@@ -66,39 +67,43 @@ const navigation = computed(() => {
           <span>Tickets</span>
         </NuxtLink>
 
-        <USlideover v-model:open="mobileOpen" side="left" title="Navegación">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-menu"
-            aria-label="Abrir navegación"
-          />
+        <div class="mobile-actions">
+          <UColorModeButton color="primary" variant="soft" aria-label="Cambiar tema de color" />
 
-          <template #body>
-            <nav class="sidebar-nav mobile-nav" aria-label="Navegación principal">
-              <NuxtLink
-                v-for="item in navigation"
-                :key="item.to"
-                :to="item.to"
-                class="nav-link"
-                @click="mobileOpen = false"
-              >
-                <UIcon :name="item.icon" aria-hidden="true" />
-                <span>{{ item.label }}</span>
-              </NuxtLink>
-            </nav>
-          </template>
+          <USlideover v-model:open="mobileOpen" side="left" title="Navegación">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-menu"
+              aria-label="Abrir navegación"
+            />
 
-          <template v-if="user" #footer>
-            <div class="mobile-account">
-              <span class="account-details">
-                <strong>{{ user.name }}</strong>
-                <span>{{ user.email }}</span>
-              </span>
-              <UButton color="neutral" variant="outline" icon="i-lucide-log-out" label="Salir" @click="logout" />
-            </div>
-          </template>
-        </USlideover>
+            <template #body>
+              <nav class="sidebar-nav mobile-nav" aria-label="Navegación principal">
+                <NuxtLink
+                  v-for="item in navigation"
+                  :key="item.to"
+                  :to="item.to"
+                  class="nav-link"
+                  @click="mobileOpen = false"
+                >
+                  <UIcon :name="item.icon" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </NuxtLink>
+              </nav>
+            </template>
+
+            <template v-if="user" #footer>
+              <div class="mobile-account">
+                <span class="account-details">
+                  <strong>{{ user.name }}</strong>
+                  <span>{{ user.email }}</span>
+                </span>
+                <UButton color="neutral" variant="outline" icon="i-lucide-log-out" label="Salir" @click="logout" />
+              </div>
+            </template>
+          </USlideover>
+        </div>
       </header>
 
       <main>
@@ -114,8 +119,12 @@ const navigation = computed(() => {
   min-height: 100vh;
   grid-template-columns: 17rem minmax(0, 1fr);
   background:
-    radial-gradient(circle at 8% 0%, rgb(255 255 255 / 72%), transparent 30rem),
-    var(--tickets-canvas);
+    radial-gradient(
+      circle at 8% 0%,
+      color-mix(in srgb, var(--ui-bg-elevated) 72%, transparent),
+      transparent 30rem
+    ),
+    var(--ui-bg);
 }
 
 .desktop-sidebar {
@@ -126,8 +135,8 @@ const navigation = computed(() => {
   height: 100dvh;
   flex-direction: column;
   padding: 1.5rem 1rem;
-  border-right: 1px solid rgb(20 33 61 / 10%);
-  background: rgb(251 250 247 / 92%);
+  border-right: 1px solid var(--ui-border);
+  background: color-mix(in srgb, var(--ui-bg-elevated) 92%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -142,7 +151,7 @@ const navigation = computed(() => {
 .brand-link {
   gap: 0.7rem;
   padding-inline: 0.45rem;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.95rem;
   font-weight: 750;
   letter-spacing: -0.02em;
@@ -155,8 +164,8 @@ const navigation = computed(() => {
   height: 2rem;
   place-items: center;
   border-radius: 0.5rem;
-  background: var(--tickets-ink);
-  color: #fff;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.8rem;
 }
 
@@ -170,7 +179,7 @@ const navigation = computed(() => {
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 0.7rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
@@ -179,13 +188,13 @@ const navigation = computed(() => {
 
 .nav-link:hover,
 .nav-link.router-link-active {
-  background: #e7ece7;
-  color: #2d6654;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
 }
 
 .nav-link:focus-visible,
 .brand-link:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid var(--ui-primary);
   outline-offset: 2px;
 }
 
@@ -199,7 +208,7 @@ const navigation = computed(() => {
   gap: 0.65rem;
   margin-top: auto;
   padding: 0.85rem 0.45rem 0;
-  border-top: 1px solid var(--tickets-line);
+  border-top: 1px solid var(--ui-border);
 }
 
 .account-avatar {
@@ -209,8 +218,8 @@ const navigation = computed(() => {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #e7ece7;
-  color: #2d6654;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.75rem;
   font-weight: 800;
 }
@@ -234,7 +243,7 @@ const navigation = computed(() => {
 }
 
 .account-details span {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.68rem;
 }
 
@@ -256,6 +265,12 @@ main {
   gap: 1rem;
 }
 
+.mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 @media (max-width: 800px) {
   .app-shell {
     display: block;
@@ -274,8 +289,8 @@ main {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgb(20 33 61 / 10%);
-    background: rgb(251 250 247 / 92%);
+    border-bottom: 1px solid var(--ui-border);
+    background: color-mix(in srgb, var(--ui-bg-elevated) 92%, transparent);
     backdrop-filter: blur(14px);
   }
 }

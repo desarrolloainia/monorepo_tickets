@@ -60,10 +60,10 @@ const quantities = [11, 22] as const
 <style scoped>
 .request-form {
   padding: clamp(1.4rem, 3vw, 2rem);
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1.1rem;
-  background: var(--tickets-paper);
-  box-shadow: 0 1rem 3rem rgb(20 33 61 / 5%);
+  background: var(--ui-bg-elevated);
+  box-shadow: 0 1rem 3rem color-mix(in srgb, black 5%, transparent);
 }
 
 .request-fieldset {
@@ -75,7 +75,7 @@ const quantities = [11, 22] as const
 
 .request-title {
   padding: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1.05rem;
   font-weight: 750;
   letter-spacing: -0.025em;
@@ -83,7 +83,7 @@ const quantities = [11, 22] as const
 
 .request-copy {
   margin: 0.5rem 0 1.5rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.875rem;
   line-height: 1.55;
 }
@@ -102,29 +102,29 @@ const quantities = [11, 22] as const
   flex-direction: column;
   justify-content: flex-end;
   padding: 1rem;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 0.8rem;
-  background: #fff;
+  background: var(--ui-bg);
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
 .quantity-option:hover {
-  border-color: rgb(20 33 61 / 38%);
+  border-color: color-mix(in srgb, var(--ui-text-highlighted) 38%, transparent);
   transform: translateY(-1px);
 }
 
 .quantity-option:has(input:focus-visible) {
-  outline: 3px solid rgb(45 102 84 / 26%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 26%, transparent);
   outline-offset: 2px;
 }
 
 .quantity-option--selected {
-  border-color: #2d6654;
-  box-shadow: inset 0 0 0 1px #2d6654;
+  border-color: var(--ui-primary);
+  box-shadow: inset 0 0 0 1px var(--ui-primary);
 }
 
 .quantity-number {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 2.25rem;
   font-variant-numeric: tabular-nums;
   font-weight: 720;
@@ -134,7 +134,7 @@ const quantities = [11, 22] as const
 
 .quantity-label {
   margin-top: 0.35rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.8rem;
 }
 
@@ -144,7 +144,7 @@ const quantities = [11, 22] as const
   right: 0.8rem;
   width: 1rem;
   height: 1rem;
-  color: #2d6654;
+  color: var(--ui-primary);
 }
 
 .submit-button {
@@ -157,8 +157,8 @@ const quantities = [11, 22] as const
   margin-top: 1rem;
   border: 0;
   border-radius: 0.7rem;
-  background: var(--tickets-ink);
-  color: #fff;
+  background: var(--ui-primary);
+  color: var(--ui-text-inverted);
   cursor: pointer;
   font: inherit;
   font-size: 0.875rem;
@@ -167,12 +167,12 @@ const quantities = [11, 22] as const
 }
 
 .submit-button:hover:not(:disabled) {
-  background: #223354;
+  background: color-mix(in srgb, var(--ui-primary) 88%, black);
   transform: translateY(-1px);
 }
 
 .submit-button:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 30%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 30%, transparent);
   outline-offset: 3px;
 }
 
@@ -197,11 +197,11 @@ const quantities = [11, 22] as const
 }
 
 .form-message--error {
-  color: #a43c32;
+  color: var(--ui-error);
 }
 
 .form-message--success {
-  color: #2d6654;
+  color: var(--ui-success);
 }
 
 @keyframes spin {

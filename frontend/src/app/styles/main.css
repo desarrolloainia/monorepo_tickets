@@ -1,22 +1,87 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "@fontsource-variable/public-sans";
 
-:root {
-  color-scheme: light;
-  --tickets-ink: #14213d;
-  --tickets-muted: #657083;
-  --tickets-line: #dfe3e8;
-  --tickets-paper: #fbfaf7;
-  --tickets-canvas: #f2f1ed;
+@theme static {
+  --font-sans: "Public Sans", sans-serif;
+
+  --color-orange-50: #fff5f0;
+  --color-orange-100: #ffe7db;
+  --color-orange-200: #ffcbb5;
+  --color-orange-300: #ffa57f;
+  --color-orange-400: #ff763d;
+  --color-orange-500: #ff4b00;
+  --color-orange-600: #e63f00;
+  --color-orange-700: #bd3200;
+  --color-orange-800: #972b08;
+  --color-orange-900: #7c270b;
+  --color-orange-950: #431003;
+
+  --color-green-50: #eefbf5;
+  --color-green-100: #d7f5e7;
+  --color-green-200: #b2ead2;
+  --color-green-300: #7dd8b5;
+  --color-green-400: #46bf94;
+  --color-green-500: #24a77a;
+  --color-green-600: #15865f;
+  --color-green-700: #126b50;
+  --color-green-800: #115640;
+  --color-green-900: #0f4737;
+  --color-green-950: #07281f;
+
+  --color-mir-canvas: #080c14;
+  --color-mir-sidebar: #161b26;
 }
 
-html {
-  background: var(--tickets-canvas);
+@layer theme {
+  :root {
+    --ui-bg: #f2f1ed;
+    --ui-bg-muted: #ebe7e1;
+    --ui-bg-elevated: #fbfaf7;
+    --ui-bg-accented: #e4ddd4;
+    --ui-text-dimmed: #8b8179;
+    --ui-text-muted: #6f655f;
+    --ui-text-toned: #514943;
+    --ui-text: #332e2a;
+    --ui-text-highlighted: #1f1b18;
+    --ui-border: #ddd5cc;
+    --ui-border-muted: #e8e1d9;
+    --ui-border-accented: #c9bdb1;
+  }
+
+  .dark {
+    --ui-bg: var(--color-mir-canvas);
+    --ui-bg-muted: #101722;
+    --ui-bg-elevated: var(--color-mir-sidebar);
+    --ui-bg-accented: #202938;
+    --ui-text-dimmed: #6f7b8f;
+    --ui-text-muted: #9aa5b7;
+    --ui-text-toned: #c0c8d5;
+    --ui-text: #d9dee7;
+    --ui-text-highlighted: #f8fafc;
+    --ui-border: #263247;
+    --ui-border-muted: #263247;
+    --ui-border-accented: #394760;
+  }
 }
 
-body {
-  margin: 0;
-  background: var(--tickets-canvas);
-  color: var(--tickets-ink);
-  font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--ui-bg);
+  }
+
+  ::selection {
+    background: var(--color-orange-200);
+    color: var(--color-orange-950);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

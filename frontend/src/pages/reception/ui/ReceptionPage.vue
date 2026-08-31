@@ -60,7 +60,7 @@ const {
 
 .page-eyebrow {
   margin: 0 0 0.85rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -70,7 +70,7 @@ const {
 .page-title {
   max-width: 48rem;
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   font-size: clamp(2.4rem, 6vw, 4.25rem);
   font-weight: 500;
@@ -82,7 +82,7 @@ const {
 .page-description {
   max-width: 40rem;
   margin: 1.25rem 0 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: clamp(0.95rem, 2vw, 1.05rem);
   line-height: 1.65;
 }
@@ -93,10 +93,10 @@ const {
   align-items: center;
   flex-direction: column;
   padding: 1rem 1.25rem;
-  border: 1px solid #cbd9d1;
+  border: 1px solid color-mix(in srgb, var(--ui-warning) 35%, var(--ui-border));
   border-radius: 1rem;
-  background: #e8f0eb;
-  color: #285b4b;
+  background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
+  color: var(--ui-warning);
 }
 
 .summary-number {

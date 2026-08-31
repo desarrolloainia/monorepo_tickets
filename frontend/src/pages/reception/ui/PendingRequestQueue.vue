@@ -152,7 +152,7 @@ function confirmApproval() {
       <footer class="queue-footer">
         <p>{{ rangeStart }}–{{ rangeEnd }} de {{ requests.length }} solicitudes</p>
         <UPagination v-model:page="page" :items-per-page="itemsPerPage" :total="requests.length" :sibling-count="1"
-          color="info" active-color="success" variant="ghost" size="sm" />
+          color="primary" active-color="primary" variant="ghost" size="sm" />
       </footer>
     </template>
   </section>
@@ -161,15 +161,15 @@ function confirmApproval() {
     description="Chrome te pedirá que elijas una impresora antes de imprimir." :ui="{ content: 'sm:max-w-lg' }">
     <template #body>
       <div v-if="selectedRequest" class="grid gap-4">
-        <div class="rounded-xl border border-(--tickets-line) bg-(--tickets-paper) p-4">
-          <p class="m-0 text-xs font-bold uppercase tracking-widest text-[#2d6654]">Solicitud</p>
-          <strong class="mt-2 block text-lg text-(--tickets-ink)">{{ selectedRequest.requester_name }}</strong>
-          <p class="mt-1 mb-0 text-sm text-(--tickets-muted)">
+        <div class="rounded-xl border border-default bg-elevated p-4">
+          <p class="m-0 text-xs font-bold uppercase tracking-widest text-primary">Solicitud</p>
+          <strong class="mt-2 block text-lg text-highlighted">{{ selectedRequest.requester_name }}</strong>
+          <p class="mt-1 mb-0 text-sm text-muted">
             {{ selectedRequest.cantidad }} tickets · {{ formatDate(selectedRequest.fecha_creacion) }}
           </p>
         </div>
 
-        <div class="flex gap-3 rounded-xl bg-[#edf4ef] p-4 text-sm leading-6 text-[#285b4b]">
+        <div class="flex gap-3 rounded-xl bg-success/10 p-4 text-sm leading-6 text-success">
           <UIcon name="i-lucide-printer-check" class="mt-1 size-4 shrink-0" aria-hidden="true" />
           <p class="m-0">
             Después de aprobar se abrirá una pestaña con la vista A4 y el diálogo de impresión de Chrome.
@@ -191,10 +191,10 @@ function confirmApproval() {
 .queue {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1.1rem;
-  background: var(--tickets-paper);
-  box-shadow: 0 18px 50px rgb(20 33 61 / 5%);
+  background: var(--ui-bg-elevated);
+  box-shadow: 0 18px 50px color-mix(in srgb, black 5%, transparent);
 }
 
 .queue-header {
@@ -204,12 +204,12 @@ function confirmApproval() {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.25rem clamp(1.25rem, 3vw, 1.75rem);
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .queue-eyebrow {
   margin: 0 0 0.25rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -218,7 +218,7 @@ function confirmApproval() {
 
 .queue-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1.05rem;
   font-weight: 750;
   letter-spacing: -0.025em;
@@ -230,8 +230,8 @@ function confirmApproval() {
   height: 1.8rem;
   place-items: center;
   border-radius: 999px;
-  background: #ebece8;
-  color: var(--tickets-muted);
+  background: color-mix(in srgb, var(--ui-warning) 14%, transparent);
+  color: var(--ui-warning);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -247,7 +247,7 @@ function confirmApproval() {
   align-items: center;
   grid-template-columns: 1.35fr 1fr 0.7fr auto;
   gap: 1rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .loading-row:last-child {
@@ -268,7 +268,7 @@ function confirmApproval() {
   width: 1.5rem;
   height: 1.5rem;
   margin-bottom: 1rem;
-  color: #89919e;
+  color: var(--ui-error);
 }
 
 .empty-check {
@@ -278,8 +278,8 @@ function confirmApproval() {
   place-items: center;
   margin-bottom: 1.1rem;
   border-radius: 50%;
-  background: #e0eee7;
-  color: #2d6654;
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
+  color: var(--ui-success);
 }
 
 .empty-check svg {
@@ -289,7 +289,7 @@ function confirmApproval() {
 
 .state-title {
   margin: 0;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 1rem;
   font-weight: 750;
 }
@@ -297,7 +297,7 @@ function confirmApproval() {
 .state-copy {
   max-width: 22rem;
   margin: 0.5rem 0 1.25rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.82rem;
   line-height: 1.55;
 }
@@ -313,9 +313,9 @@ function confirmApproval() {
 
 .desktop-table th {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--tickets-line);
-  background: #f5f4f0;
-  color: #7b8492;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-text-muted);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -336,8 +336,8 @@ function confirmApproval() {
 .desktop-table td {
   height: 4.8rem;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--tickets-line);
-  color: var(--tickets-muted);
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text-muted);
   font-size: 0.78rem;
   white-space: nowrap;
 }
@@ -351,7 +351,7 @@ function confirmApproval() {
 }
 
 .desktop-table tbody tr:hover {
-  background: #f8f7f3;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
 }
 
 .desktop-table td:first-child {
@@ -367,20 +367,20 @@ function confirmApproval() {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #e5e9e3;
-  color: #335b4e;
+  background: color-mix(in srgb, var(--ui-primary) 14%, transparent);
+  color: var(--ui-primary);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .requester-name {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.82rem;
 }
 
 .ticket-amount {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.95rem;
   font-variant-numeric: tabular-nums;
 }
@@ -403,13 +403,13 @@ function confirmApproval() {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.8rem 1.5rem;
-  border-top: 1px solid var(--tickets-line);
-  background: #faf9f6;
+  border-top: 1px solid var(--ui-border);
+  background: var(--ui-bg);
 }
 
 .queue-footer p {
   margin: 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
@@ -438,9 +438,9 @@ function confirmApproval() {
 
   .mobile-request {
     padding: 1rem;
-    border: 1px solid var(--tickets-line);
+    border: 1px solid var(--ui-border);
     border-radius: 0.9rem;
-    background: #fffefa;
+    background: var(--ui-bg);
   }
 
   .mobile-requester {
@@ -453,7 +453,7 @@ function confirmApproval() {
   .mobile-details dt {
     display: block;
     margin-bottom: 0.18rem;
-    color: #9299a4;
+    color: var(--ui-text-muted);
     font-size: 0.61rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -466,12 +466,12 @@ function confirmApproval() {
     gap: 1rem;
     margin: 1rem 0;
     padding-block: 0.85rem;
-    border-block: 1px solid var(--tickets-line);
+    border-block: 1px solid var(--ui-border);
   }
 
   .mobile-details dd {
     margin: 0;
-    color: var(--tickets-muted);
+    color: var(--ui-text-muted);
     font-size: 0.75rem;
     line-height: 1.4;
   }

@@ -354,7 +354,7 @@ async function submitPrice() {
 
 .eyebrow {
   margin: 0 0 0.65rem;
-  color: #2d6654;
+  color: var(--ui-primary);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -372,7 +372,7 @@ async function submitPrice() {
 
 .page-heading > p:last-child {
   margin: 1.15rem 0 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   line-height: 1.6;
 }
 
@@ -407,9 +407,9 @@ async function submitPrice() {
   overflow: hidden;
   margin: 0;
   padding: 0.2rem;
-  border: 1px solid #cfd5d1;
+  border: 1px solid var(--ui-border);
   border-radius: 0.7rem;
-  background: #e8e9e5;
+  background: var(--ui-bg-muted);
 }
 
 .scope-filter button {
@@ -417,7 +417,7 @@ async function submitPrice() {
   border: 0;
   border-radius: 0.5rem;
   background: transparent;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 750;
@@ -425,15 +425,15 @@ async function submitPrice() {
 }
 
 .scope-filter button[aria-pressed="true"] {
-  background: var(--tickets-paper);
-  color: #285b4b;
-  box-shadow: 0 1px 3px rgb(20 33 61 / 12%);
+  background: var(--ui-bg-elevated);
+  color: var(--ui-primary);
+  box-shadow: 0 1px 3px color-mix(in srgb, black 12%, transparent);
 }
 
 .period-filter label {
   display: grid;
   gap: 0.35rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -444,10 +444,10 @@ async function submitPrice() {
   min-width: 8.5rem;
   height: 2.75rem;
   padding: 0 2.2rem 0 0.85rem;
-  border: 1px solid #cfd5d1;
+  border: 1px solid var(--ui-border);
   border-radius: 0.7rem;
-  background: var(--tickets-paper);
-  color: var(--tickets-ink);
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text-highlighted);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 650;
@@ -464,7 +464,7 @@ async function submitPrice() {
 .search-field:focus-within,
 .price-input:focus-within,
 tbody tr:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
   outline-offset: 2px;
 }
 
@@ -474,9 +474,9 @@ tbody tr:focus-visible {
   gap: 1.5rem;
   margin-bottom: 1rem;
   padding: clamp(1.25rem, 3vw, 1.75rem);
-  border: 1px solid #c8d8cf;
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
-  background: #edf3ef;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
 }
 
 .price-summary {
@@ -488,13 +488,13 @@ tbody tr:focus-visible {
 .price-summary small,
 .price-form label,
 .price-form small {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.72rem;
 }
 
 .price-summary strong {
   margin-block: 0.25rem;
-  color: #285b4b;
+  color: var(--ui-primary);
   font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   font-size: 2.5rem;
   font-weight: 500;
@@ -511,7 +511,7 @@ tbody tr:focus-visible {
 
 .price-controls p {
   margin: 0;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.8rem;
 }
 
@@ -531,9 +531,9 @@ tbody tr:focus-visible {
   align-items: center;
   grid-column: 1;
   padding-inline: 0.85rem;
-  border: 1px solid #bfcac4;
+  border: 1px solid var(--ui-border);
   border-radius: 0.7rem;
-  background: #fff;
+  background: var(--ui-bg);
 }
 
 .price-input input {
@@ -542,12 +542,12 @@ tbody tr:focus-visible {
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font: inherit;
 }
 
 .price-input span {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
 }
 
 .price-actions {
@@ -561,7 +561,7 @@ tbody tr:focus-visible {
 .price-state {
   display: flex;
   align-items: center;
-  color: #8d2929;
+  color: var(--ui-error);
   font-size: 0.8rem;
 }
 
@@ -578,22 +578,22 @@ tbody tr:focus-visible {
 }
 
 .price-notice--success {
-  background: #dceadf;
-  color: #285b4b;
+  background: color-mix(in srgb, var(--ui-success) 14%, transparent);
+  color: var(--ui-success);
 }
 
 .price-notice--error {
-  background: #fff1f1;
-  color: #8d2929;
+  background: color-mix(in srgb, var(--ui-error) 14%, transparent);
+  color: var(--ui-error);
 }
 
 .price-history {
   padding-top: 1rem;
-  border-top: 1px solid #c8d8cf;
+  border-top: 1px solid var(--ui-border);
 }
 
 .price-history summary {
-  color: #285b4b;
+  color: var(--ui-primary);
   font-size: 0.8rem;
   font-weight: 750;
   cursor: pointer;
@@ -610,7 +610,7 @@ tbody tr:focus-visible {
   grid-template-columns: 6rem minmax(8rem, 1fr) auto;
   gap: 1rem;
   padding-block: 0.65rem;
-  border-bottom: 1px solid #d6e0da;
+  border-bottom: 1px solid var(--ui-border);
   font-size: 0.78rem;
 }
 
@@ -620,7 +620,7 @@ tbody tr:focus-visible {
 
 .price-history li span,
 .price-history time {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
 }
 
 .metrics {
@@ -641,25 +641,25 @@ tbody tr:focus-visible {
   justify-content: center;
   flex-direction: column;
   padding: clamp(1.25rem, 3vw, 1.75rem);
-  border: 1px solid var(--tickets-line);
-  background: var(--tickets-paper);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg-elevated);
 }
 
 .metric--primary {
-  border-color: #315f50;
-  background: #315f50;
-  color: #fff;
+  border-color: var(--ui-primary);
+  background: var(--ui-primary);
+  color: var(--ui-text-inverted);
 }
 
 .metric > span {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.73rem;
   font-weight: 700;
 }
 
 .metric--primary > span,
 .metric--primary small {
-  color: #d9e8e1;
+  color: var(--ui-text-inverted);
 }
 
 .metric strong {
@@ -672,15 +672,15 @@ tbody tr:focus-visible {
 }
 
 .metric small {
-  color: #8a929e;
+  color: var(--ui-text-muted);
   font-size: 0.7rem;
 }
 
 .directory {
   overflow: hidden;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
-  background: var(--tickets-paper);
+  background: var(--ui-bg-elevated);
 }
 
 .directory-header {
@@ -690,7 +690,7 @@ tbody tr:focus-visible {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1.25rem clamp(1.25rem, 3vw, 1.75rem);
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .directory-header h2 {
@@ -712,8 +712,8 @@ tbody tr:focus-visible {
   place-items: center;
   padding-inline: 0.4rem;
   border-radius: 999px;
-  background: #e7ece7;
-  color: #2d6654;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
@@ -726,10 +726,10 @@ tbody tr:focus-visible {
   align-items: center;
   gap: 0.6rem;
   padding-inline: 0.8rem;
-  border: 1px solid #d5d9d6;
+  border: 1px solid var(--ui-border);
   border-radius: 0.7rem;
-  background: #fff;
-  color: #89919e;
+  background: var(--ui-bg);
+  color: var(--ui-text-muted);
 }
 
 .search-field input {
@@ -738,7 +738,7 @@ tbody tr:focus-visible {
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font: inherit;
   font-size: 0.8rem;
 }
@@ -756,13 +756,13 @@ table {
 th,
 td {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
   text-align: left;
 }
 
 th {
-  background: #f5f4f0;
-  color: #7b8491;
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-muted);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -770,12 +770,12 @@ th {
 }
 
 td {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.8rem;
 }
 
 td strong {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-size: 0.86rem;
 }
 
@@ -797,7 +797,7 @@ td strong {
 .employee-cell small,
 .mobile-employee small {
   overflow: hidden;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -810,8 +810,8 @@ td strong {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #e5e9e3;
-  color: #315f50;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.72rem;
   font-weight: 850;
   text-transform: uppercase;
@@ -824,7 +824,7 @@ tbody tr {
 
 tbody tr:hover,
 tbody tr:focus-visible {
-  background: #f0f4f0;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
 }
 
 tbody tr:last-child td {
@@ -837,14 +837,14 @@ tbody tr:last-child td {
 }
 
 .amount {
-  color: var(--tickets-ink);
+  color: var(--ui-text-highlighted);
   font-weight: 750;
 }
 
 .arrow-cell {
   width: 2rem;
   padding-left: 0;
-  color: #8b948f;
+  color: var(--ui-text-muted);
 }
 
 .mobile-list {
@@ -865,16 +865,16 @@ tbody tr:last-child td {
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 0.75rem;
   padding: 1rem;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 0.85rem;
-  background: #fffefa;
-  color: var(--tickets-ink);
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text-highlighted);
   font: inherit;
   text-align: left;
 }
 
 .mobile-list button:focus-visible {
-  outline: 3px solid rgb(45 102 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
   outline-offset: 2px;
 }
 
@@ -890,12 +890,12 @@ tbody tr:last-child td {
 }
 
 .mobile-amount small {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.66rem;
 }
 
 .mobile-list svg {
-  color: #8b948f;
+  color: var(--ui-text-muted);
 }
 
 .table-loading,
@@ -918,9 +918,9 @@ tbody tr:last-child td {
 
 .page-state {
   min-height: 20rem;
-  border: 1px solid var(--tickets-line);
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
-  background: var(--tickets-paper);
+  background: var(--ui-bg-elevated);
 }
 
 .page-state svg,
@@ -929,7 +929,7 @@ tbody tr:last-child td {
   width: 1.5rem;
   height: 1.5rem;
   margin-bottom: 0.75rem;
-  color: #87918b;
+  color: var(--ui-text-muted);
 }
 
 .page-state h2,
@@ -942,7 +942,7 @@ tbody tr:last-child td {
 .table-state p,
 .detail-state p {
   margin: 0.45rem 0 1rem;
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.82rem;
 }
 
@@ -950,8 +950,8 @@ tbody tr:last-child td {
   display: grid;
   padding: 1.4rem;
   border-radius: 0.8rem;
-  background: #e9f0eb;
-  color: #285b4b;
+  background: color-mix(in srgb, var(--ui-primary) 14%, transparent);
+  color: var(--ui-primary);
 }
 
 .detail-summary span,
@@ -978,7 +978,7 @@ tbody tr:last-child td {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 0.25rem;
-  border-bottom: 1px solid var(--tickets-line);
+  border-bottom: 1px solid var(--ui-border);
   font-size: 0.82rem;
 }
 
@@ -988,18 +988,18 @@ tbody tr:last-child td {
 }
 
 .detail-list time {
-  color: var(--tickets-muted);
+  color: var(--ui-text-muted);
   font-size: 0.72rem;
 }
 
 .detail-list li > span {
-  color: #fff;
+  color: var(--ui-text-highlighted);
   font-variant-numeric: tabular-nums;
   font-weight: 750;
 }
 
 .detail-list li strong {
-  color: #fff;
+  color: var(--ui-text-highlighted);
 }
 
 @media (max-width: 760px) {

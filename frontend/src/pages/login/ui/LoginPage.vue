@@ -43,6 +43,13 @@ onMounted(async () => {
     </section>
 
     <section class="access-panel" aria-labelledby="login-title">
+      <UColorModeButton
+        class="color-mode-button"
+        color="primary"
+        variant="soft"
+        aria-label="Cambiar tema de color"
+      />
+
       <div class="access-card">
         <div class="mobile-lockup">
           <div class="mobile-mark" aria-hidden="true">T</div>
@@ -101,8 +108,8 @@ onMounted(async () => {
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(0, 52fr) minmax(28rem, 48fr);
-  background: #f4f6fa;
-  color: #152039;
+  background: var(--ui-bg);
+  color: var(--ui-text-highlighted);
 }
 
 .brand-panel {
@@ -111,8 +118,8 @@ onMounted(async () => {
   flex-direction: column;
   justify-content: space-between;
   padding: 3rem clamp(2.5rem, 6vw, 7rem);
-  background: #13213d;
-  color: #fff;
+  background: var(--ui-bg-accented);
+  color: var(--ui-text-highlighted);
 }
 
 .brand-content {
@@ -134,8 +141,8 @@ onMounted(async () => {
   height: 2.75rem;
   place-items: center;
   border-radius: 0.625rem;
-  background: #fff;
-  color: #13213d;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 1.125rem;
   font-weight: 750;
   box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
@@ -151,7 +158,7 @@ onMounted(async () => {
 .brand-type,
 .brand-footer {
   margin: 0.125rem 0 0;
-  color: #aebbd1;
+  color: var(--ui-text-muted);
   font-size: 0.8125rem;
 }
 
@@ -161,7 +168,7 @@ onMounted(async () => {
 
 .eyebrow {
   margin: 0;
-  color: #61708d;
+  color: var(--ui-text-muted);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -169,7 +176,7 @@ onMounted(async () => {
 }
 
 .brand-copy .eyebrow {
-  color: #aebbd1;
+  color: var(--ui-primary);
 }
 
 .brand-title,
@@ -189,12 +196,13 @@ onMounted(async () => {
 .brand-description {
   max-width: 30rem;
   margin: 1.5rem 0 0;
-  color: #c4cee0;
+  color: var(--ui-text-toned);
   font-size: 1rem;
   line-height: 1.65;
 }
 
 .access-panel {
+  position: relative;
   display: flex;
   min-height: 100vh;
   flex-direction: column;
@@ -203,10 +211,16 @@ onMounted(async () => {
   background:
     radial-gradient(
       circle at top right,
-      rgb(220 228 242 / 45%),
+      color-mix(in srgb, var(--ui-primary) 12%, transparent),
       transparent 32rem
     ),
-    #f4f6fa;
+    var(--ui-bg);
+}
+
+.color-mode-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
 }
 
 .access-card {
@@ -214,18 +228,18 @@ onMounted(async () => {
   max-width: 27rem;
   margin: auto;
   padding: clamp(2rem, 4vw, 2.75rem);
-  border: 1px solid #e1e6ef;
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
-  background: #fff;
+  background: var(--ui-bg-elevated);
   box-shadow:
-    0 1px 2px rgb(15 23 42 / 3%),
-    0 16px 40px rgb(15 23 42 / 7%);
+    0 1px 2px rgb(0 0 0 / 3%),
+    0 16px 40px rgb(0 0 0 / 7%);
 }
 
 .mobile-lockup {
   display: none;
   margin-bottom: 3rem;
-  color: #13213d;
+  color: var(--ui-text-highlighted);
   font-size: 1rem;
   font-weight: 700;
 }
@@ -233,8 +247,8 @@ onMounted(async () => {
 .mobile-mark {
   width: 2.25rem;
   height: 2.25rem;
-  background: #13213d;
-  color: #fff;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-size: 0.9375rem;
 }
 
@@ -246,7 +260,7 @@ onMounted(async () => {
 
 .access-description {
   margin: 1rem 0 0;
-  color: #61708d;
+  color: var(--ui-text-muted);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -260,10 +274,10 @@ onMounted(async () => {
   gap: 0.875rem;
   margin-top: 2.5rem;
   padding: 0.875rem 1rem;
-  border: 1px solid #c6ceda;
+  border: 1px solid var(--ui-primary);
   border-radius: 0.625rem;
-  background: #fff;
-  color: #152039;
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.9375rem;
@@ -276,9 +290,10 @@ onMounted(async () => {
 }
 
 .microsoft-button:hover:not(:disabled) {
-  border-color: #8795ad;
-  background: #f8fafd;
-  box-shadow: 0 4px 12px rgb(15 23 42 / 8%);
+  border-color: var(--ui-primary);
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
   transform: translateY(-1px);
 }
 
@@ -288,7 +303,7 @@ onMounted(async () => {
 }
 
 .microsoft-button:focus-visible {
-  outline: 3px solid #a9c5f5;
+  outline: 3px solid var(--ui-primary);
   outline-offset: 3px;
 }
 
@@ -328,7 +343,7 @@ onMounted(async () => {
 
 .access-note {
   margin: 1.25rem 0 0;
-  color: #61708d;
+  color: var(--ui-text-muted);
   font-size: 0.8125rem;
   line-height: 1.55;
   text-align: center;
@@ -337,9 +352,10 @@ onMounted(async () => {
 .access-error {
   margin: 1rem 0 0;
   padding: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--ui-error) 35%, transparent);
   border-radius: 0.625rem;
-  background: #fce8e8;
-  color: #8f2929;
+  background: color-mix(in srgb, var(--ui-error) 12%, transparent);
+  color: var(--ui-error);
   font-size: 0.8125rem;
   line-height: 1.5;
   text-align: center;
@@ -347,7 +363,7 @@ onMounted(async () => {
 
 .support-copy {
   margin: 2rem 0 0;
-  color: #61708d;
+  color: var(--ui-text-muted);
   font-size: 0.8125rem;
   text-align: center;
 }
@@ -374,6 +390,11 @@ onMounted(async () => {
   .access-panel {
     min-height: 100vh;
     padding: 1.5rem;
+  }
+
+  .color-mode-button {
+    top: 1rem;
+    right: 1rem;
   }
 
   .access-card {

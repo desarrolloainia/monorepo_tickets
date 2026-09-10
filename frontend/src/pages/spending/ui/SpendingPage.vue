@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { parseDate, type DateValue } from '@internationalized/date'
 import { shallowRef } from 'vue'
 
 import AnnualLimitControl from './AnnualLimitControl.vue'
@@ -46,6 +47,18 @@ const {
   year
 } = useSpending(props.managePrice)
 
+// ponytail: adapt the calendar to the existing ISO filters without changing the API.
+const calendarRange = computed<{ start: DateValue | undefined, end: DateValue | undefined }>({
+  get: () => ({
+    start: desde.value ? parseDate(desde.value) : undefined,
+    end: hasta.value ? parseDate(hasta.value) : undefined
+  }),
+  set: value => {
+    desde.value = value.start?.toString() ?? ''
+    hasta.value = value.end?.toString() ?? ''
+  }
+})
+
 const editingPrice = shallowRef(false)
 const priceInput = shallowRef('')
 
@@ -89,10 +102,16 @@ async function submitPrice() {
 
         <fieldset class="period-filter">
           <legend>Periodo del informe</legend>
-          <template v-if="scope === 'range'">
-            <label>Desde <input v-model="desde" type="date" :max="hasta" required></label>
-            <label>Hasta <input v-model="hasta" type="date" :min="desde" required></label>
-          </template>
+          <UPopover v-if="scope === 'range'">
+            <UButton color="neutral" variant="outline" icon="i-lucide-calendar"
+              aria-label="Seleccionar fechas desde y hasta">
+              {{ desde ? formatDate(desde) : 'Desde' }} - {{ hasta ? formatDate(hasta) : 'Hasta' }}
+            </UButton>
+            <template #content>
+              <UCalendar v-model="calendarRange" range locale="es-ES" :week-starts-on="1"
+                :number-of-months="1" class="p-2" />
+            </template>
+          </UPopover>
           <label v-if="scope === 'month'">
             <span>Mes</span>
             <select v-model="month">

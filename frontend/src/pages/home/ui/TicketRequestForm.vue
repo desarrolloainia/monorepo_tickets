@@ -4,6 +4,7 @@ import type { TicketAmount } from '../api/tickets'
 const amount = defineModel<TicketAmount>({ required: true })
 
 defineProps<{
+  remaining?: number | null
   error: string | null
   submitting: boolean
   success: string | null
@@ -29,7 +30,7 @@ const quantities = [11, 22] as const
           class="quantity-option"
           :class="{ 'quantity-option--selected': amount === quantity }"
         >
-          <input v-model="amount" class="sr-only" type="radio" name="cantidad" :value="quantity">
+          <input v-model="amount" class="sr-only" type="radio" name="cantidad" :value="quantity" :disabled="remaining != null && quantity > remaining">
           <span class="quantity-number">{{ quantity }}</span>
           <span class="quantity-label">tickets</span>
           <UIcon
@@ -41,7 +42,7 @@ const quantities = [11, 22] as const
         </label>
       </div>
 
-      <button class="submit-button" type="submit" :disabled="submitting">
+      <button class="submit-button" type="submit" :disabled="submitting || (remaining != null && amount > remaining)">
         <UIcon
           :name="submitting ? 'i-lucide-loader-circle' : 'i-lucide-arrow-right'"
           class="submit-icon"
@@ -58,6 +59,7 @@ const quantities = [11, 22] as const
 </template>
 
 <style scoped>
+.quantity-option:has(input:disabled) { opacity: 0.45; cursor: not-allowed; }
 .request-form {
   padding: clamp(1.4rem, 3vw, 2rem);
   border: 1px solid var(--ui-border);

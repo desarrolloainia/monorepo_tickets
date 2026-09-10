@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
 
+import AnnualLimitControl from './AnnualLimitControl.vue'
 import { useSpending } from '../model/use-spending'
 
 const props = withDefaults(defineProps<{ managePrice?: boolean }>(), { managePrice: false })
@@ -12,13 +13,14 @@ const months = [
 const currentYear = new Date().getFullYear()
 const years = Array.from({ length: currentYear - 2019 }, (_, index) => currentYear - index)
 const moneyFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' })
-const dateFormatter = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' })
+const dateFormatter = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeZone: 'Europe/Madrid' })
 const dateTimeFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'medium',
-  timeStyle: 'short'
+  timeStyle: 'short', timeZone: 'Europe/Madrid'
 })
 
 const {
+  desde, hasta, rangeValid, downloadExcel, downloading, downloadError,
   detail,
   detailError,
   detailLoading,
@@ -47,9 +49,7 @@ const {
 const editingPrice = shallowRef(false)
 const priceInput = shallowRef('')
 
-const periodLabel = computed(() => scope.value === 'year'
-  ? String(year.value)
-  : `${months[month.value - 1]} ${year.value}`)
+const periodLabel = computed(() => report.value ? `${report.value.desde} — ${report.value.hasta}` : '')
 
 function formatMoney(value: number | string | undefined) {
   const amount = Number(value ?? 0)
@@ -84,17 +84,22 @@ async function submitPrice() {
           <legend>Alcance del informe</legend>
           <button type="button" :aria-pressed="scope === 'month'" @click="scope = 'month'">Mes</button>
           <button type="button" :aria-pressed="scope === 'year'" @click="scope = 'year'">Año</button>
+          <button type="button" :aria-pressed="scope === 'range'" @click="scope = 'range'">Desde/Hasta</button>
         </fieldset>
 
         <fieldset class="period-filter">
           <legend>Periodo del informe</legend>
+          <template v-if="scope === 'range'">
+            <label>Desde <input v-model="desde" type="date" :max="hasta" required></label>
+            <label>Hasta <input v-model="hasta" type="date" :min="desde" required></label>
+          </template>
           <label v-if="scope === 'month'">
             <span>Mes</span>
             <select v-model="month">
               <option v-for="(label, index) in months" :key="label" :value="index + 1">{{ label }}</option>
             </select>
           </label>
-          <label>
+          <label v-if="scope !== 'range'">
             <span>Año</span>
             <select v-model="year">
               <option v-for="option in years" :key="option" :value="option">{{ option }}</option>
@@ -104,18 +109,26 @@ async function submitPrice() {
       </div>
     </header>
 
-    <div v-if="isLoading && !report" class="metrics" aria-label="Cargando resumen">
+    <AnnualLimitControl v-if="!managePrice" />
+    <p v-if="!rangeValid" role="alert">Indica Desde y Hasta en orden.</p>
+    <div class="export-controls">
+      <span v-if="report">{{ periodLabel }} · Europe/Madrid</span>
+      <UButton label="Descargar Excel" :loading="downloading"
+        :disabled="!report || !rangeValid || isLoading || Boolean(error)" @click="downloadExcel" />
+      <p v-if="downloadError" role="alert">{{ downloadError }}</p>
+    </div>
+    <div v-if="isLoading" class="metrics" aria-label="Cargando resumen">
       <USkeleton v-for="index in 3" :key="index" class="metric-skeleton" />
     </div>
 
-    <section v-else-if="error && !report" class="page-state" role="alert">
+    <section v-else-if="error" class="page-state" role="alert">
       <UIcon name="i-lucide-wifi-off" aria-hidden="true" />
       <h2>No pudimos cargar el gasto</h2>
       <p>Comprueba tu conexión y vuelve a intentarlo.</p>
       <UButton color="neutral" variant="outline" label="Reintentar" @click="() => refresh()" />
     </section>
 
-    <template v-else>
+    <template v-else-if="report && rangeValid">
       <section class="metrics" aria-label="Resumen del periodo" aria-live="polite">
         <article class="metric metric--primary">
           <span>Gasto aprobado</span>
@@ -335,6 +348,9 @@ async function submitPrice() {
 </template>
 
 <style scoped>
+.export-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block: 1rem; }
+.period-controls { flex-wrap: wrap; }
+.period-filter input { padding: 0.6rem; border: 1px solid var(--ui-border); border-radius: 0.5rem; }
 .spending-page {
   max-width: 92rem;
   padding-block: clamp(1.5rem, 4vw, 3rem);

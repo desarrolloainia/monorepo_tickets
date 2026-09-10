@@ -7,6 +7,7 @@ import TicketRequestHistory from './TicketRequestHistory.vue'
 
 const { user } = useAuth()
 const {
+  quota, quotaError, refreshQuota,
   isLoading,
   isSubmitting,
   loadError,
@@ -30,9 +31,11 @@ const {
       </p>
     </header>
 
+    <p v-if="quotaError" role="alert">No se pudo cargar el cupo. <button @click="() => refreshQuota()">Reintentar</button></p>
+    <p v-if="quota">Cupo {{ quota.year }}: {{ quota.cantidad_maxima ?? 'Sin límite' }} · Consumo: {{ quota.consumo }} · Saldo: {{ quota.saldo ?? 'Sin límite' }}</p>
     <div class="page-grid">
       <TicketRequestForm v-model="selectedAmount" :error="submitError" :submitting="isSubmitting"
-        :success="submitSuccess" @submit="submit" />
+        :success="submitSuccess" :remaining="quota?.saldo" @submit="submit" />
 
       <TicketRequestHistory :failed="Boolean(loadError)" :loading="isLoading" :print-base-url="printBaseUrl"
         :requests="sortedRequests" @retry="refresh" />

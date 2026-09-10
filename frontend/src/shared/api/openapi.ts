@@ -227,6 +227,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tickets/spending/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Spending */
+        get: operations["download_spending_tickets_spending_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/annual-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Annual Limit */
+        get: operations["get_annual_limit_tickets_annual_limit_get"];
+        /** Update Annual Limit */
+        put: operations["update_annual_limit_tickets_annual_limit_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/annual-quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Annual Quota */
+        get: operations["get_annual_quota_tickets_annual_quota_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tickets/price-configurations": {
         parameters: {
             query?: never;
@@ -317,6 +369,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnnualLimitDTO */
+        AnnualLimitDTO: {
+            /** Cantidad Maxima */
+            cantidad_maxima: number | null;
+            /** Updated By Id */
+            updated_by_id: string | null;
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** AnnualLimitUpdateDTO */
+        AnnualLimitUpdateDTO: {
+            /** Cantidad Maxima */
+            cantidad_maxima: number | null;
+        };
+        /** AnnualQuotaDTO */
+        AnnualQuotaDTO: {
+            /** Year */
+            year: number;
+            /** Cantidad Maxima */
+            cantidad_maxima: number | null;
+            /** Consumo */
+            consumo: number;
+            /** Saldo */
+            saldo: number | null;
+        };
         /** BlockedUserDTO */
         BlockedUserDTO: {
             /** Microsoft Oid */
@@ -385,6 +462,16 @@ export interface components {
         SpendingSummaryDTO: {
             /** Period */
             period: string;
+            /**
+             * Desde
+             * Format: date
+             */
+            desde: string;
+            /**
+             * Hasta
+             * Format: date
+             */
+            hasta: string;
             /** Total Gastado */
             total_gastado: string;
             /** Tickets Emitidos */
@@ -512,6 +599,16 @@ export interface components {
         UserSpendingDetailDTO: {
             /** Period */
             period: string;
+            /**
+             * Desde
+             * Format: date
+             */
+            desde: string;
+            /**
+             * Hasta
+             * Format: date
+             */
+            hasta: string;
             /**
              * User Id
              * Format: uuid
@@ -893,6 +990,8 @@ export interface operations {
         parameters: {
             query?: {
                 period?: string | null;
+                desde?: string | null;
+                hasta?: string | null;
             };
             header?: never;
             path?: never;
@@ -924,6 +1023,8 @@ export interface operations {
         parameters: {
             query?: {
                 period?: string | null;
+                desde?: string | null;
+                hasta?: string | null;
             };
             header?: never;
             path: {
@@ -949,6 +1050,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_spending_tickets_spending_export_get: {
+        parameters: {
+            query?: {
+                period?: string | null;
+                desde?: string | null;
+                hasta?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_annual_limit_tickets_annual_limit_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnualLimitDTO"];
+                };
+            };
+        };
+    };
+    update_annual_limit_tickets_annual_limit_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnualLimitUpdateDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnualLimitDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_annual_quota_tickets_annual_quota_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnualQuotaDTO"];
                 };
             };
         };

@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
@@ -29,6 +29,17 @@ class IssuedTicketModel(Base):
     fecha_emision: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     precio_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
+
+class TicketMaximumModel(Base):
+    __tablename__ = "ticket_maximums"
+    __table_args__ = (
+        CheckConstraint("id = 1", name="ck_ticket_maximum_singleton"),
+        CheckConstraint("cantidad_maxima > 0", name="ck_ticket_maximum_positive"),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    cantidad_maxima: Mapped[int | None] = mapped_column(Integer)
+    updated_by_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 class TicketCodeCounterModel(Base):
     __tablename__ = "ticket_code_counters"

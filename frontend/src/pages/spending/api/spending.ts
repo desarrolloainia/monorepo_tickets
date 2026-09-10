@@ -13,19 +13,19 @@ type ApiOptions = {
   headers?: HeadersInit
 }
 
-export function fetchSpending(period: string, options: ApiOptions) {
+export function fetchSpending(query: SpendingRange, options: ApiOptions) {
   return $fetch<SpendingSummaryDTO>('/tickets/spending', {
     ...options,
     credentials: 'include',
-    query: { period }
+    query
   })
 }
 
-export function fetchUserSpending(userId: string, period: string, options: ApiOptions) {
+export function fetchUserSpending(userId: string, query: SpendingRange, options: ApiOptions) {
   return $fetch<UserSpendingDetailDTO>(`/tickets/spending/users/${userId}`, {
     ...options,
     credentials: 'include',
-    query: { period }
+    query
   })
 }
 
@@ -49,5 +49,13 @@ export function updateTicketPrice(
       precio_unitario: precioUnitario,
       expected_configuration_id: expectedConfigurationId
     }
+  })
+}
+
+export type SpendingRange = { period: string } | { desde: string, hasta: string }
+
+export function downloadSpending(query: SpendingRange, options: ApiOptions) {
+  return $fetch<Blob>('/tickets/spending/export', {
+    ...options, credentials: 'include', query, responseType: 'blob'
   })
 }

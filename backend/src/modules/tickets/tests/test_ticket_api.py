@@ -145,6 +145,8 @@ def test_spending_summary_uses_month_range_and_includes_zero_users() -> None:
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "period": "2026-07",
+        "desde": "2026-07-01",
+        "hasta": "2026-07-31",
         "total_gastado": "11.00",
         "tickets_emitidos": 2,
         "gasto_medio_por_usuario": "5.50",
@@ -166,8 +168,8 @@ def test_spending_summary_uses_month_range_and_includes_zero_users() -> None:
         ],
     }
     assert uow.ticket_requests.range == (
-        datetime(2026, 7, 1, tzinfo=UTC),
-        datetime(2026, 8, 1, tzinfo=UTC),
+        datetime(2026, 6, 30, 22, tzinfo=UTC),
+        datetime(2026, 7, 31, 22, tzinfo=UTC),
     )
 
 
@@ -271,8 +273,8 @@ def test_user_spending_returns_annual_approved_request_details() -> None:
     ]
     assert response.json()["total_gastado"] == "11.00"
     assert uow.ticket_requests.range == (
-        datetime(2026, 1, 1, tzinfo=UTC),
-        datetime(2027, 1, 1, tzinfo=UTC),
+        datetime(2025, 12, 31, 23, tzinfo=UTC),
+        datetime(2026, 12, 31, 23, tzinfo=UTC),
     )
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import ClassVar, Literal
 from uuid import UUID
@@ -45,6 +45,8 @@ class UserSpendingDTO(BaseModel):
 
 class SpendingSummaryDTO(BaseModel):
     period: str
+    desde: date
+    hasta: date
     total_gastado: Decimal
     tickets_emitidos: int
     gasto_medio_por_usuario: Decimal
@@ -62,6 +64,8 @@ class SpendingRequestDTO(BaseModel):
 
 class UserSpendingDetailDTO(BaseModel):
     period: str
+    desde: date
+    hasta: date
     user_id: UUID
     nombre: str
     email: str
@@ -89,3 +93,21 @@ class TicketPriceOverviewDTO(BaseModel):
     precio_unitario: Decimal
     current_configuration_id: UUID | None
     historial: list[TicketPriceConfigurationDTO]
+
+
+class AnnualLimitUpdateDTO(BaseModel):
+    cantidad_maxima: int | None = Field(gt=0, le=2147483647, strict=True)
+
+
+class AnnualLimitDTO(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    cantidad_maxima: int | None
+    updated_by_id: UUID | None
+    updated_at: datetime | None
+
+
+class AnnualQuotaDTO(BaseModel):
+    year: int
+    cantidad_maxima: int | None
+    consumo: int
+    saldo: int | None

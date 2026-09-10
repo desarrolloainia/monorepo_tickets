@@ -1,15 +1,18 @@
-import re
-from datetime import UTC, datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
+from starlette.concurrency import run_in_threadpool
 
 from modules.auth.config import auth_settings
 from modules.auth.dependencies import current_user, get_uow
 from modules.tickets.api.dtos import (
+    AnnualLimitDTO,
+    AnnualLimitUpdateDTO,
+    AnnualQuotaDTO,
     PendingTicketRequestDTO,
     SpendingRequestDTO,
     SpendingSummaryDTO,
@@ -21,6 +24,9 @@ from modules.tickets.api.dtos import (
     UserSpendingDetailDTO,
     UserSpendingDTO,
 )
+from modules.tickets.application.date_ranges import MADRID, date_range, effective_dates
+from modules.tickets.application.export_spending import export_spending
+from modules.tickets.domain.entities.annual_limit import AnnualLimitExceeded
 from modules.tickets.application.approve_ticket_request import ApproveTicketRequest
 from modules.tickets.application.create_ticket_request import CreateTicketRequest
 from modules.tickets.application.get_ticket_request import GetTicketRequest
@@ -34,6 +40,7 @@ from modules.tickets.infrastructure.ticket_email_sender import (
     send_reception_emails,
 )
 from modules.users.api.dependencies import (
+    require_rrhh,
     require_accountant,
     require_approver,
     require_spending_access,
@@ -44,26 +51,13 @@ from shared.uow import UnitOfWork
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
 
-def _period_range(period: str | None) -> tuple[str, datetime, datetime]:
-    period = period or datetime.now(UTC).strftime("%Y-%m")
+def _period_range(
+    period: str | None, desde: date | None = None, hasta: date | None = None
+) -> tuple[str, datetime, datetime]:
     try:
-        if re.fullmatch(r"\d{4}", period):
-            start = datetime(int(period), 1, 1, tzinfo=UTC)
-            return period, start, datetime(start.year + 1, 1, 1, tzinfo=UTC)
-        if re.fullmatch(r"\d{4}-\d{2}", period):
-            start = datetime(int(period[:4]), int(period[5:]), 1, tzinfo=UTC)
-            end = (
-                datetime(start.year + 1, 1, 1, tzinfo=UTC)
-                if start.month == 12
-                else datetime(start.year, start.month + 1, 1, tzinfo=UTC)
-            )
-            return period, start, end
-    except ValueError:
-        pass
-    raise HTTPException(
-        status_code=422,
-        detail="El periodo debe tener formato YYYY-MM o YYYY",
-    )
+        return date_range(period, desde, hasta)
+    except (ValueError, OverflowError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 # Estos endpoints para los empleados
@@ -79,7 +73,11 @@ async def create_ticket_request(
         for candidate in await unit_of_work.users.list_all()
         if candidate.role == UserRole.APPROVER
     ]
-    ticket_request = await CreateTicketRequest(unit_of_work).create(data.cantidad, user.id)
+    try:
+        ticket_request = await CreateTicketRequest(unit_of_work).create(data.cantidad, user.id)
+    except AnnualLimitExceeded as error:
+        await unit_of_work.rollback()
+        raise HTTPException(status_code=409, detail=str(error)) from error
     if recipients:
         background_tasks.add_task(
             send_reception_emails,
@@ -119,12 +117,15 @@ async def get_spending(
     unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
     _: Annotated[User, Depends(require_spending_access)],
     period: str | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
 ) -> SpendingSummaryDTO:
-    period, start, end = _period_range(period)
+    period, start, end = _period_range(period, desde, hasta)
     users = await unit_of_work.ticket_requests.spending_by_user(start, end)
     total = sum((user.total_gastado for user in users), Decimal("0.00"))
     return SpendingSummaryDTO(
         period=period,
+        **effective_dates(start, end),
         total_gastado=total,
         tickets_emitidos=sum(user.tickets_emitidos for user in users),
         gasto_medio_por_usuario=(
@@ -140,14 +141,17 @@ async def get_user_spending(
     unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
     _: Annotated[User, Depends(require_spending_access)],
     period: str | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
 ) -> UserSpendingDetailDTO:
-    period, start, end = _period_range(period)
+    period, start, end = _period_range(period, desde, hasta)
     user = await unit_of_work.users.get_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     requests = await unit_of_work.ticket_requests.spending_requests(user_id, start, end)
     return UserSpendingDetailDTO(
         period=period,
+        **effective_dates(start, end),
         user_id=user.id,
         nombre=user.name,
         email=user.email,
@@ -155,6 +159,58 @@ async def get_user_spending(
         tickets_emitidos=sum(request.tickets_emitidos for request in requests),
         solicitudes=[SpendingRequestDTO.model_validate(request) for request in requests],
     )
+
+
+@router.get("/spending/export", response_class=Response)
+async def download_spending(
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    _: Annotated[User, Depends(require_spending_access)],
+    period: str | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+) -> Response:
+    _, start, end = _period_range(period, desde, hasta)
+    users = await unit_of_work.ticket_requests.spending_by_user(start, end)
+    tickets = await unit_of_work.ticket_requests.spending_tickets(start, end)
+    dates = effective_dates(start, end)
+    content = await run_in_threadpool(export_spending, users, tickets, **dates)
+    return Response(content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition":
+                 f'attachment; filename="tickets-{dates["desde"]}-{dates["hasta"]}.xlsx"'})
+
+
+@router.get("/annual-limit", response_model=AnnualLimitDTO)
+async def get_annual_limit(
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    _: Annotated[User, Depends(require_rrhh)],
+) -> AnnualLimitDTO:
+    return AnnualLimitDTO.model_validate(await unit_of_work.ticket_requests.annual_limit())
+
+
+@router.put("/annual-limit", response_model=AnnualLimitDTO)
+async def update_annual_limit(
+    data: AnnualLimitUpdateDTO,
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(require_rrhh)],
+) -> AnnualLimitDTO:
+    configuration = await unit_of_work.ticket_requests.set_annual_limit(data.cantidad_maxima, user.id)
+    await unit_of_work.commit()
+    return AnnualLimitDTO.model_validate(configuration)
+
+
+@router.get("/annual-quota", response_model=AnnualQuotaDTO)
+async def get_annual_quota(
+    unit_of_work: Annotated[UnitOfWork, Depends(get_uow)],
+    user: Annotated[User, Depends(current_user)],
+) -> AnnualQuotaDTO:
+    year = datetime.now(MADRID).year
+    _, start, end = date_range(str(year))
+    configuration = await unit_of_work.ticket_requests.annual_limit(lock=True)
+    consumed = await unit_of_work.ticket_requests.annual_consumption(user.id, start, end)
+    maximum = configuration.cantidad_maxima
+    return AnnualQuotaDTO(year=year, cantidad_maxima=maximum, consumo=consumed,
+                          saldo=None if maximum is None else max(0, maximum - consumed))
 
 
 @router.get("/price-configurations", response_model=TicketPriceOverviewDTO)

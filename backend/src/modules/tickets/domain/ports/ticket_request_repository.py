@@ -11,10 +11,21 @@ from modules.tickets.domain.entities.ticket import (
     UserSpending,
 )
 from modules.tickets.domain.entities.ticket_price import TicketPriceConfiguration
+from modules.tickets.domain.entities.annual_limit import AnnualLimit
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 
 
 class TicketRequestRepository(Protocol):
+    async def annual_limit(self, *, lock: bool = False) -> AnnualLimit: ...
+
+    async def set_annual_limit(self, maximum: int | None, user_id: UUID) -> AnnualLimit: ...
+
+    async def lock_employee(self, user_id: UUID) -> None: ...
+
+    async def annual_consumption(self, user_id: UUID, start: datetime, end: datetime) -> int: ...
+
+    async def spending_tickets(self, start: datetime, end: datetime) -> list[tuple]: ...
+
     async def add(self, request: TicketRequest) -> TicketRequest: ...
 
     async def find_by_id(

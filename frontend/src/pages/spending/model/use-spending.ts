@@ -1,18 +1,21 @@
 import { computed, shallowRef, watch } from 'vue'
 
 import {
+  downloadSpending,
   fetchSpending,
   fetchTicketPrice,
   fetchUserSpending,
   updateTicketPrice
 } from '../api/spending'
-import type { UserSpending } from '../api/spending'
+import type { SpendingRange, UserSpending } from '../api/spending'
 
 export function useSpending(managePrice = false) {
-  const now = new Date()
-  const scope = shallowRef<'month' | 'year'>('month')
-  const month = shallowRef(now.getMonth() + 1)
-  const year = shallowRef(now.getFullYear())
+  const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date())
+  const scope = shallowRef<'month' | 'year' | 'range'>('month')
+  const month = shallowRef(Number(today.slice(5, 7)))
+  const year = shallowRef(Number(today.slice(0, 4)))
+  const desde = shallowRef(`${today.slice(0, 7)}-01`)
+  const hasta = shallowRef(today)
   const search = shallowRef('')
   const selectedUser = shallowRef<UserSpending>()
   const detail = shallowRef<Awaited<ReturnType<typeof fetchUserSpending>>>()
@@ -25,12 +28,15 @@ export function useSpending(managePrice = false) {
   const period = computed(() => scope.value === 'year'
     ? String(year.value)
     : `${year.value}-${String(month.value).padStart(2, '0')}`)
+  const rangeValid = computed(() => scope.value !== 'range' || Boolean(desde.value && hasta.value && desde.value <= hasta.value))
+  const query = computed<SpendingRange>(() => scope.value === 'range'
+    ? { desde: desde.value, hasta: hasta.value } : { period: period.value })
   const apiOptions = { baseURL: config.public.apiBase, headers: requestHeaders }
 
   const { data: report, error, refresh, status } = useAsyncData(
     'spending-report',
-    () => fetchSpending(period.value, apiOptions),
-    { watch: [period] }
+    () => rangeValid.value ? fetchSpending(query.value, apiOptions) : Promise.resolve(null),
+    { watch: [query] }
   )
   const {
     data: priceOverview,
@@ -54,6 +60,7 @@ export function useSpending(managePrice = false) {
   })
 
   async function openDetail(user: UserSpending) {
+    if (!report.value || status.value === 'pending' || error.value) return
     selectedUser.value = user
     detail.value = undefined
     detailError.value = false
@@ -61,7 +68,7 @@ export function useSpending(managePrice = false) {
     modalOpen.value = true
 
     try {
-      detail.value = await fetchUserSpending(user.user_id, period.value, apiOptions)
+      detail.value = await fetchUserSpending(user.user_id, { desde: report.value!.desde, hasta: report.value!.hasta }, apiOptions)
     } catch (cause) {
       if ((cause as { statusCode?: number }).statusCode === 401) return router.push('/login')
       detailError.value = true
@@ -70,7 +77,7 @@ export function useSpending(managePrice = false) {
     }
   }
 
-  watch(period, () => {
+  watch(query, () => {
     modalOpen.value = false
   })
 
@@ -107,7 +114,30 @@ export function useSpending(managePrice = false) {
     }
   }
 
+  const downloading = shallowRef(false)
+  const downloadError = shallowRef('')
+  async function downloadExcel() {
+    if (!report.value || !rangeValid.value || status.value === 'pending' || error.value) return
+    downloading.value = true
+    downloadError.value = ''
+    const range = { desde: report.value.desde, hasta: report.value.hasta }
+    try {
+      const blob = await downloadSpending(range, apiOptions)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `tickets-${range.desde}-${range.hasta}.xlsx`
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch {
+      downloadError.value = 'No se pudo descargar el Excel.'
+    } finally {
+      downloading.value = false
+    }
+  }
+
   return {
+    desde, hasta, rangeValid, downloadExcel, downloading, downloadError,
     detail,
     detailError,
     detailLoading,

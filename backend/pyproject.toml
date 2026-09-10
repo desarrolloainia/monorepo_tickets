@@ -8,7 +8,6 @@ requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.18.5",
     "asyncpg>=0.31.0",
-    "fastapi>=0.139.2",
     "jinja2>=3.1",
     "pydantic-settings>=2.0",
     "python-barcode>=0.16.1",
@@ -16,7 +15,10 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.51",
     "uvicorn[standard]>=0.30",
     "pyjwt>=2.11.0",
-    "msal>=1.35.0"
+    "msal>=1.35.0",
+    "openpyxl>=3.1.5",
+    "tzdata>=2026.3",
+    "fastapi[standard]>=0.141.1",
 ]
 
 [dependency-groups]

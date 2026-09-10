@@ -1,3 +1,4 @@
+import type { components } from '@/shared/api'
 import { computed, shallowRef } from 'vue'
 
 import { createTicketRequest, fetchTicketRequests, type TicketAmount } from '../api/tickets'
@@ -25,6 +26,11 @@ export function useTicketRequests() {
     { default: () => [] }
   )
 
+  const { data: quota, error: quotaError, refresh: refreshQuota } = useAsyncData('annual-quota',
+    () => $fetch<components['schemas']['AnnualQuotaDTO']>('/tickets/annual-quota', {
+      baseURL: config.public.apiBase, headers: requestHeaders, credentials: 'include'
+    }))
+
   const sortedRequests = computed(() => [...requests.value].sort(
     (left, right) => Date.parse(right.fecha_creacion) - Date.parse(left.fecha_creacion)
   ))
@@ -39,6 +45,7 @@ export function useTicketRequests() {
     try {
       const created = await createTicketRequest(config.public.apiBase, selectedAmount.value)
       requests.value = [created, ...requests.value]
+      await refreshQuota()
       submitSuccess.value = `Solicitud de ${created.cantidad} tickets enviada.`
     } catch (cause) {
       const statusCode = (cause as { statusCode?: number }).statusCode
@@ -48,6 +55,11 @@ export function useTicketRequests() {
         return
       }
 
+      if (statusCode === 409) {
+        submitError.value = (cause as { data?: { detail?: string } }).data?.detail ?? 'Cupo anual superado.'
+        await refreshQuota()
+        return
+      }
       submitError.value = statusCode === 422
         ? 'La cantidad debe ser 11 o 22.'
         : 'No se pudo enviar la solicitud. Inténtalo de nuevo.'
@@ -57,6 +69,7 @@ export function useTicketRequests() {
   }
 
   return {
+    quota, quotaError, refreshQuota,
     isLoading: computed(() => status.value === 'pending'),
     isSubmitting,
     loadError,

@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -15,17 +15,65 @@ from modules.tickets.domain.entities.ticket import (
     UserSpending,
 )
 from modules.tickets.domain.entities.ticket_price import TicketPriceConfiguration
+from modules.tickets.domain.entities.annual_limit import AnnualLimit
 from modules.tickets.domain.entities.ticket_printer import PrintableTicket
 from modules.tickets.infrastructure.sqlalchemy.persistence.models import (
     IssuedTicketModel,
     TicketCodeCounterModel,
     TicketPriceConfigurationModel,
     TicketRequestModel,
+    TicketMaximumModel,
 )
 from modules.users.infrastructure.sqlalchemy.persistence.models import UserModel
 
 
 class SQLAlchemyTicketRequestRepository:
+    async def annual_limit(self, *, lock: bool = False) -> AnnualLimit:
+        query = select(TicketMaximumModel).where(TicketMaximumModel.id == 1)
+        if lock:
+            query = query.with_for_update(read=True)
+        model = (await self.session.execute(query.execution_options(populate_existing=True))).scalar_one()
+        return AnnualLimit(model.cantidad_maxima, model.updated_by_id, model.updated_at)
+
+    async def set_annual_limit(self, maximum: int | None, user_id: UUID) -> AnnualLimit:
+        model = (await self.session.execute(
+            select(TicketMaximumModel).where(TicketMaximumModel.id == 1)
+            .with_for_update().execution_options(populate_existing=True)
+        )).scalar_one()
+        model.cantidad_maxima = maximum
+        model.updated_by_id = user_id
+        model.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return AnnualLimit(model.cantidad_maxima, model.updated_by_id, model.updated_at)
+
+    async def lock_employee(self, user_id: UUID) -> None:
+        (await self.session.execute(
+            select(UserModel.id).where(UserModel.id == user_id).with_for_update()
+        )).scalar_one()
+
+    async def annual_consumption(self, user_id: UUID, start: datetime, end: datetime) -> int:
+        return (await self.session.execute(
+            select(func.coalesce(func.sum(TicketRequestModel.cantidad), 0)).where(
+                TicketRequestModel.created_by_id == user_id,
+                TicketRequestModel.status.in_([TicketRequestStatus.PENDING, TicketRequestStatus.APPROVED]),
+                TicketRequestModel.fecha_creacion >= start,
+                TicketRequestModel.fecha_creacion < end,
+            )
+        )).scalar_one()
+
+    async def spending_tickets(self, start: datetime, end: datetime) -> list[tuple]:
+        rows = await self.session.execute(
+            select(UserModel.id, UserModel.name, TicketRequestModel.id, IssuedTicketModel.codigo,
+                   IssuedTicketModel.fecha_emision, IssuedTicketModel.precio_unitario)
+            .select_from(IssuedTicketModel)
+            .join(TicketRequestModel, IssuedTicketModel.ticket_request_id == TicketRequestModel.id)
+            .join(UserModel, TicketRequestModel.created_by_id == UserModel.id)
+            .where(TicketRequestModel.status == TicketRequestStatus.APPROVED,
+                   IssuedTicketModel.fecha_emision >= start, IssuedTicketModel.fecha_emision < end)
+            .order_by(UserModel.name, UserModel.id, IssuedTicketModel.codigo)
+        )
+        return [tuple(row) for row in rows]
+
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
